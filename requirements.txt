@@ -1,0 +1,9 @@
+qdrant-client[fastembed]
+opencv-python
+streamlit
+watchdog
+pandas
+numpy
+SpeechRecognition
+pydub
+Pillow
