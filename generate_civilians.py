@@ -3,25 +3,15 @@ import uuid
 import time
 from qdrant_client import QdrantClient
 from qdrant_client.http import models
+from config import get_qdrant_client, ensure_collection
 
 # Configuration
 COLLECTION_NAME = "civilian_memory"
-QDRANT_URL = "http://localhost:6333"
 CIVILIAN_COUNT = 20
 
 # Drone starts at 28.7041, 77.1025. We want civilians near/around this path.
 BASE_LAT = 28.7041
 BASE_LON = 77.1025
-
-def init_qdrant():
-    client = QdrantClient(url=QDRANT_URL)
-    if not client.collection_exists(COLLECTION_NAME):
-        client.create_collection(
-            collection_name=COLLECTION_NAME,
-            vectors_config=models.VectorParams(size=1, distance=models.Distance.COSINE), # Dummy vector size
-        )
-        print(f"Created collection: {COLLECTION_NAME}")
-    return client
 
 def generate_civilians(count=20):
     civilians = []
@@ -46,7 +36,8 @@ def generate_civilians(count=20):
 
 def main():
     print("Initializing Civilian Generator...")
-    client = init_qdrant()
+    client = get_qdrant_client()
+    ensure_collection(client, COLLECTION_NAME, 1) # Dummy vector size 1
     
     civilians = generate_civilians(CIVILIAN_COUNT)
     

@@ -9,22 +9,13 @@ from fastembed import ImageEmbedding
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 from ultralytics import YOLOWorld
+from config import get_qdrant_client, ensure_collection
 
 # Configuration
 IMAGE_INBOX = "image_inbox"
 COLLECTION_NAME = "visual_memory"
-QDRANT_URL = "http://localhost:6333"
 MODEL_NAME = "yolov8s-worldv2.pt"
 CUSTOM_CLASSES = ["person", "car", "flood", "cyclone", "hurricane"]
-
-def init_qdrant():
-    client = QdrantClient(url=QDRANT_URL)
-    if not client.collection_exists(COLLECTION_NAME):
-        client.create_collection(
-            collection_name=COLLECTION_NAME,
-            vectors_config=models.VectorParams(size=512, distance=models.Distance.COSINE),
-        )
-    return client
 
 class ImageHandler(FileSystemEventHandler):
     def __init__(self, client, embed_model, yolo_model):
@@ -103,7 +94,8 @@ def main():
         os.makedirs(IMAGE_INBOX)
         print(f"📂 Created {IMAGE_INBOX}")
 
-    client = init_qdrant()
+    client = get_qdrant_client()
+    ensure_collection(client, COLLECTION_NAME, 512)
     
     print("⏳ Loading Models for Image Agent...")
     embed_model = ImageEmbedding(model_name="Qdrant/clip-ViT-B-32-vision")

@@ -5,20 +5,11 @@ from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 from qdrant_client import QdrantClient, models
 from fastembed import TextEmbedding
+from config import get_qdrant_client, ensure_collection
 
 # Configuration
 TEXT_INBOX = "text_inbox"
 COLLECTION_NAME = "tactical_memory"
-QDRANT_URL = "http://localhost:6333"
-
-def init_qdrant():
-    client = QdrantClient(url=QDRANT_URL)
-    if not client.collection_exists(COLLECTION_NAME):
-        client.create_collection(
-            collection_name=COLLECTION_NAME,
-            vectors_config=models.VectorParams(size=384, distance=models.Distance.COSINE),
-        )
-    return client
 
 class TextHandler(FileSystemEventHandler):
     def __init__(self, client, embed_model):
@@ -32,15 +23,28 @@ class TextHandler(FileSystemEventHandler):
 
     def process_text(self, file_path):
         print(f"⚡ Reading {file_path}...")
-        try:
-            with open(file_path, 'r', encoding='utf-8') as f:
-                content = f.read()
-                
-            if not content.strip():
-                return
+        
+        content = None
+        for i in range(5):
+            try:
+                with open(file_path, 'r', encoding='utf-8') as f:
+                    content = f.read()
+                if content:
+                    break
+            except (PermissionError, IOError):
+                print(f"   ⏳ Waiting for file release... ({i+1}/5)")
+                time.sleep(1)
+        
+        if not content:
+            print("❌ Error reading text (locked or empty)")
+            return
 
-            print(f"📖 Content Preview: {content[:50]}...")
+        if not content.strip():
+            return
+
+        print(f"📖 Content Preview: {content[:50]}...")
             
+        try:
             # Embed
             embeddings = list(self.embed_model.embed([content]))
             vector = embeddings[0]
@@ -73,8 +77,10 @@ def main():
     if not os.path.exists(TEXT_INBOX):
         os.makedirs(TEXT_INBOX)
         print(f"📂 Created {TEXT_INBOX}")
-        
-    client = init_qdrant()
+
+    client = get_qdrant_client()
+    ensure_collection(client, COLLECTION_NAME, 384)
+    
     print("Loading Text Embedding Model...")
     embed_model = TextEmbedding(model_name="BAAI/bge-small-en-v1.5")
     

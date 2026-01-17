@@ -2,22 +2,24 @@ import streamlit as st
 import pandas as pd
 import json
 import os
-from qdrant_client import QdrantClient
-from fastembed import TextEmbedding
+from fastembed import TextEmbedding, ImageEmbedding
+from config import get_qdrant_client
 
-# Configuration
-QDRANT_URL = "http://localhost:6333"
+# Constants
 VISUAL_COLLECTION = "visual_memory"
-CIVILIAN_COLLECTION = "civilian_memory"
 AUDIO_COLLECTION = "audio_memory"
 TACTICAL_COLLECTION = "tactical_memory"
+CIVILIAN_COLLECTION = "civilian_memory"
 ALERT_FILE = "alerts.json"
 
-st.set_page_config(page_title="Aegis Command Center", layout="wide")
+# Initialize
+st.set_page_config(layout="wide", page_title="Aegis Command")
 
 @st.cache_resource
-def get_qdrant_client():
-    return QdrantClient(url=QDRANT_URL)
+def get_cached_client():
+    return get_qdrant_client()
+
+client = get_cached_client()
 
 @st.cache_resource
 def get_text_embedding_model():
@@ -67,21 +69,25 @@ except Exception as e:
     st.sidebar.warning(f"Could not load radio chatter: {e}")
 
 # Main Layout with Tabs
-tab1, tab2, tab3, tab4 = st.tabs(["📍 Warzone Map", "🔍 Semantic Search", "📻 Audio Logs", "🐦 Social & Sensors"])
+tab1, tab2, tab3, tab4 = st.tabs(["📍 Crisis Map", "🔍 Semantic Search", "📻 Audio Logs", "🐦 Social & Sensors"])
 
 with tab1:
-    st.header("📍 Warzone Map (Real-time)")
+    st.header("📍 Crisis Operational Map (Real-time)")
 
     if os.path.exists("latest_frame.jpg"):
         pass 
 
     
     try:
-        visual_res = client.scroll(collection_name=VISUAL_COLLECTION, limit=100, with_payload=True)
-        visual_points = visual_res[0]
-        
-        civ_res = client.scroll(collection_name=CIVILIAN_COLLECTION, limit=100, with_payload=True)
-        civ_points = civ_res[0]
+        visual_points = []
+        if client.collection_exists(VISUAL_COLLECTION):
+            visual_res = client.scroll(collection_name=VISUAL_COLLECTION, limit=100, with_payload=True)
+            visual_points = visual_res[0]
+
+        civ_points = []
+        if client.collection_exists(CIVILIAN_COLLECTION):
+            civ_res = client.scroll(collection_name=CIVILIAN_COLLECTION, limit=100, with_payload=True)
+            civ_points = civ_res[0]
         
         map_data = []
         
@@ -100,7 +106,7 @@ with tab1:
             st.map(df)
             st.caption(f"Showing {len(visual_points)} hazard points and {len(civ_points)} civilian locations")
         else:
-            st.info("No data points to display on map.")
+            st.info("No data points to display on map. (Collections might be empty or missing)")
             
     except Exception as e:
         st.error(f"Error fetching map data: {e}")
@@ -114,25 +120,33 @@ with tab2:
     if query:
         st.subheader("Results")
         
+        # Threshold for relevance (Adjusted for CLIP/BGE)
+        SCORE_THRESHOLD = 0.22 
+        
         # --- 1. Visual Search (CLIP) ---
         visual_q = list(clip_text_model.embed([query]))[0]
-        vis_res = client.query_points(collection_name=VISUAL_COLLECTION, query=visual_q.tolist(), limit=3)
-        vis_hits = vis_res.points
+        
+        vis_hits = []
+        if client.collection_exists(VISUAL_COLLECTION):
+            vis_res = client.query_points(collection_name=VISUAL_COLLECTION, query=visual_q.tolist(), limit=5, with_payload=True)
+            vis_hits = [hit for hit in vis_res.points if hit.score > SCORE_THRESHOLD]
         
         # --- 2. Text/Audio Search (BGE) ---
         text_q = list(text_embedding_model.embed([query]))[0]
         
         audio_hits = []
         if client.collection_exists(AUDIO_COLLECTION):
-            aud_res = client.query_points(collection_name=AUDIO_COLLECTION, query=text_q.tolist(), limit=3)
-            audio_hits = aud_res.points
+            aud_res = client.query_points(collection_name=AUDIO_COLLECTION, query=text_q.tolist(), limit=5, with_payload=True)
+            audio_hits = [hit for hit in aud_res.points if hit.score > SCORE_THRESHOLD]
             
         text_hits = []
         if client.collection_exists(TACTICAL_COLLECTION):
-            tac_res = client.query_points(collection_name=TACTICAL_COLLECTION, query=text_q.tolist(), limit=3)
-            text_hits = tac_res.points
+            tac_res = client.query_points(collection_name=TACTICAL_COLLECTION, query=text_q.tolist(), limit=5, with_payload=True)
+            text_hits = [hit for hit in tac_res.points if hit.score > SCORE_THRESHOLD]
 
         # --- Display Results ---
+        if not (vis_hits or audio_hits or text_hits):
+            st.warning("No relevant results found above the similarity threshold.")
         
         if vis_hits:
             st.markdown("### 🖼️ Visual Matches")

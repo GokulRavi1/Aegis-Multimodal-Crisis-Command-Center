@@ -6,20 +6,11 @@ from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 from qdrant_client import QdrantClient, models
 from fastembed import TextEmbedding
+from config import get_qdrant_client, ensure_collection
 
 # Configuration
 AUDIO_INBOX = "audio_inbox"
 COLLECTION_NAME = "audio_memory"
-QDRANT_URL = "http://localhost:6333"
-
-def init_qdrant():
-    client = QdrantClient(url=QDRANT_URL)
-    if not client.collection_exists(COLLECTION_NAME):
-        client.create_collection(
-            collection_name=COLLECTION_NAME,
-            vectors_config=models.VectorParams(size=384, distance=models.Distance.COSINE),
-        )
-    return client
 
 class AudioHandler(FileSystemEventHandler):
     def __init__(self, client, embed_model):
@@ -28,20 +19,41 @@ class AudioHandler(FileSystemEventHandler):
         self.recognizer = sr.Recognizer()
 
     def on_created(self, event):
-        if not event.is_directory and event.src_path.lower().endswith(('.wav', '.flac', '.aiff')):
+        if not event.is_directory and event.src_path.lower().endswith(('.wav', '.flac', '.aiff','.mp3')):
             print(f"🎤 New audio detected: {event.src_path}")
             self.process_audio(event.src_path)
 
     def process_audio(self, file_path):
         print(f"⚡ Transcribing {file_path}...")
-        try:
-            with sr.AudioFile(file_path) as source:
-                audio_data = self.recognizer.record(source)
-                # 使用 Google Web Speech API (Default)
-                transcript = self.recognizer.recognize_google(audio_data)
+        
+        transcript = None
+        for i in range(5):
+            try:
+                # Ensure file is readable
+                with open(file_path, 'rb'): 
+                    pass
+                    
+                with sr.AudioFile(file_path) as source:
+                    audio_data = self.recognizer.record(source)
+                    transcript = self.recognizer.recognize_google(audio_data)
                 
-            print(f"📝 Transcript: {transcript}")
+                if transcript:
+                    break
+            except (PermissionError, IOError):
+                print(f"   ⏳ Waiting for file release... ({i+1}/5)")
+                time.sleep(1)
+            except ValueError:
+                # Likely format error (e.g. mp3 without ffmpeg)
+                print(f"⚠️ Format warning: Could not process {os.path.basename(file_path)}. Ensure it is a valid WAV/FLAC.")
+                return
+
+        if not transcript:
+            print("❌ Error processing audio (locked or invalid format)")
+            return
+
+        print(f"📝 Transcript: {transcript}")
             
+        try:
             # Embed the transcript
             embeddings = list(self.embed_model.embed([transcript]))
             vector = embeddings[0]
@@ -69,14 +81,16 @@ class AudioHandler(FileSystemEventHandler):
             print(f"✅ Indexed audio.")
             
         except Exception as e:
-            print(f"❌ Error processing audio: {e}")
+            print(f"❌ Error indexing audio: {e}")
 
 def main():
     if not os.path.exists(AUDIO_INBOX):
         os.makedirs(AUDIO_INBOX)
         print(f"📂 Created {AUDIO_INBOX}")
         
-    client = init_qdrant()
+    client = get_qdrant_client()
+    ensure_collection(client, COLLECTION_NAME, 384)
+    
     print("Loading Text Embedding Model...")
     embed_model = TextEmbedding(model_name="BAAI/bge-small-en-v1.5")
     
