@@ -1,94 +1,96 @@
+import os
 import time
 import datetime
-import random
-from qdrant_client import QdrantClient
-from qdrant_client.http import models
+from watchdog.observers import Observer
+from watchdog.events import FileSystemEventHandler
+from qdrant_client import QdrantClient, models
 from fastembed import TextEmbedding
 
 # Configuration
+TEXT_INBOX = "text_inbox"
 COLLECTION_NAME = "tactical_memory"
 QDRANT_URL = "http://localhost:6333"
 
-# Simulated social media posts and sensor reports
-SAMPLE_POSTS = [
-    {"content": "Help! Water rising near the main hospital entrance!", "source": "Twitter_User_123", "location_ref": "Sector-4"},
-    {"content": "Fire spotted at Sector 7 warehouse district.", "source": "Twitter_User_456", "location_ref": "Sector-7"},
-    {"content": "Roads are flooded near the central market area.", "source": "Sensor_Node_12", "location_ref": "Sector-2"},
-    {"content": "HELP! Family trapped on rooftop, need rescue!", "source": "Twitter_User_789", "location_ref": "Sector-5"},
-    {"content": "Power outage reported in residential block.", "source": "Sensor_Node_08", "location_ref": "Sector-3"},
-    {"content": "Fire spreading rapidly towards school zone!", "source": "Twitter_User_321", "location_ref": "Sector-6"},
-    {"content": "Bridge appears unstable, avoid crossing.", "source": "Sensor_Node_15", "location_ref": "Sector-1"},
-    {"content": "Help needed! Elderly people stranded without food.", "source": "Twitter_User_654", "location_ref": "Sector-8"},
-    {"content": "Gas leak detected near industrial area.", "source": "Sensor_Node_22", "location_ref": "Sector-9"},
-    {"content": "All clear in downtown area, evacuation complete.", "source": "Twitter_User_111", "location_ref": "Sector-10"},
-    {"content": "Fire engine stuck in floodwater, requesting backup.", "source": "Radio_Relay_01", "location_ref": "Sector-4"},
-    {"content": "Medical supplies running low at shelter A.", "source": "Shelter_Admin", "location_ref": "Sector-2"},
-]
-
-def calculate_reliability(content: str) -> float:
-    """Simple reliability scoring based on keywords."""
-    high_priority_keywords = ["help", "fire", "trapped", "emergency", "rescue", "spreading"]
-    content_lower = content.lower()
-    
-    for keyword in high_priority_keywords:
-        if keyword in content_lower:
-            return 0.9
-    return 0.5
-
 def init_qdrant():
     client = QdrantClient(url=QDRANT_URL)
-    # Text embedding dimension for BAAI/bge-small-en-v1.5 is 384
     if not client.collection_exists(COLLECTION_NAME):
         client.create_collection(
             collection_name=COLLECTION_NAME,
             vectors_config=models.VectorParams(size=384, distance=models.Distance.COSINE),
         )
-        print(f"Created collection: {COLLECTION_NAME}")
     return client
 
-def main():
-    print("Initializing Text Agent (Social & Sensors)...")
-    client = init_qdrant()
-    embedding_model = TextEmbedding(model_name="BAAI/bge-small-en-v1.5")
+class TextHandler(FileSystemEventHandler):
+    def __init__(self, client, embed_model):
+        self.client = client
+        self.embed_model = embed_model
 
-    print("Processing simulated social media and sensor data...")
+    def on_created(self, event):
+        if not event.is_directory and event.src_path.lower().endswith(('.txt', '.md', '.log', '.json')):
+            print(f"📄 New text detected: {event.src_path}")
+            self.process_text(event.src_path)
+
+    def process_text(self, file_path):
+        print(f"⚡ Reading {file_path}...")
+        try:
+            with open(file_path, 'r', encoding='utf-8') as f:
+                content = f.read()
+                
+            if not content.strip():
+                return
+
+            print(f"📖 Content Preview: {content[:50]}...")
+            
+            # Embed
+            embeddings = list(self.embed_model.embed([content]))
+            vector = embeddings[0]
+            
+            payload = {
+                "source": os.path.basename(file_path),
+                "type": "text",
+                "timestamp": datetime.datetime.now(datetime.timezone.utc).isoformat(),
+                "content": content,
+                "location_ref": "Unknown",
+                "reliability_score": 0.8
+            }
+            
+            self.client.upsert(
+                collection_name=COLLECTION_NAME,
+                points=[
+                    models.PointStruct(
+                        id=int(time.time() * 1000),
+                        vector=vector.tolist(),
+                        payload=payload
+                    )
+                ]
+            )
+            print(f"✅ Indexed text document.")
+            
+        except Exception as e:
+            print(f"❌ Error processing text: {e}")
+
+def main():
+    if not os.path.exists(TEXT_INBOX):
+        os.makedirs(TEXT_INBOX)
+        print(f"📂 Created {TEXT_INBOX}")
+        
+    client = init_qdrant()
+    print("Loading Text Embedding Model...")
+    embed_model = TextEmbedding(model_name="BAAI/bge-small-en-v1.5")
     
-    for i, sample in enumerate(SAMPLE_POSTS):
-        timestamp = datetime.datetime.now(datetime.timezone.utc).isoformat()
-        reliability = calculate_reliability(sample["content"])
-        
-        payload = {
-            "source": sample["source"],
-            "type": "text",
-            "content": sample["content"],
-            "timestamp": timestamp,
-            "reliability_score": reliability,
-            "location_ref": sample["location_ref"]
-        }
-        
-        # Generate text embedding
-        embeddings = list(embedding_model.embed([sample["content"]]))
-        vector = embeddings[0]
-        
-        # Upsert to Qdrant
-        point_id = int(time.time() * 1000) + i
-        client.upsert(
-            collection_name=COLLECTION_NAME,
-            points=[
-                models.PointStruct(
-                    id=point_id,
-                    vector=vector.tolist(),
-                    payload=payload
-                )
-            ]
-        )
-        
-        reliability_indicator = "🔴 HIGH" if reliability >= 0.9 else "🟡 MED"
-        print(f"Upserted: [{reliability_indicator}] {sample['source']}: {sample['content'][:40]}...")
-        
-        time.sleep(0.3)
+    observer = Observer()
+    handler = TextHandler(client, embed_model)
+    observer.schedule(handler, TEXT_INBOX, recursive=False)
+    observer.start()
     
-    print(f"\nText Agent finished. Ingested {len(SAMPLE_POSTS)} text reports.")
+    print(f"🧐 Text Agent active. Monitoring '{TEXT_INBOX}'...")
+    
+    try:
+        while True:
+            time.sleep(1)
+    except KeyboardInterrupt:
+        observer.stop()
+    observer.join()
 
 if __name__ == "__main__":
     main()

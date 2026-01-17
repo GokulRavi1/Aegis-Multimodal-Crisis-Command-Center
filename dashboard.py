@@ -71,6 +71,10 @@ tab1, tab2, tab3, tab4 = st.tabs(["📍 Warzone Map", "🔍 Semantic Search", "�
 
 with tab1:
     st.header("📍 Warzone Map (Real-time)")
+
+    if os.path.exists("latest_frame.jpg"):
+        pass 
+
     
     try:
         visual_res = client.scroll(collection_name=VISUAL_COLLECTION, limit=100, with_payload=True)
@@ -107,20 +111,81 @@ with tab2:
     
     if query:
         st.subheader("Results")
-        query_vector = list(clip_text_model.embed([query]))[0]
+    if query:
+        st.subheader("Results")
         
-        search_result = client.query_points(
-            collection_name=VISUAL_COLLECTION,
-            query=query_vector.tolist(),
-            limit=3
-        )
+        # --- 1. Visual Search (CLIP) ---
+        visual_q = list(clip_text_model.embed([query]))[0]
+        vis_res = client.query_points(collection_name=VISUAL_COLLECTION, query=visual_q.tolist(), limit=3)
+        vis_hits = vis_res.points
         
-        for hit in search_result.points:
-            payload = hit.payload
-            score = hit.score
-            st.markdown(f"**Match (Score: {score:.2f})**")
-            st.json(payload)
-            st.divider()
+        # --- 2. Text/Audio Search (BGE) ---
+        text_q = list(text_embedding_model.embed([query]))[0]
+        
+        audio_hits = []
+        if client.collection_exists(AUDIO_COLLECTION):
+            aud_res = client.query_points(collection_name=AUDIO_COLLECTION, query=text_q.tolist(), limit=3)
+            audio_hits = aud_res.points
+            
+        text_hits = []
+        if client.collection_exists(TACTICAL_COLLECTION):
+            tac_res = client.query_points(collection_name=TACTICAL_COLLECTION, query=text_q.tolist(), limit=3)
+            text_hits = tac_res.points
+
+        # --- Display Results ---
+        
+        if vis_hits:
+            st.markdown("### 🖼️ Visual Matches")
+            for hit in vis_hits:
+                payload = hit.payload
+                score = hit.score
+                source = payload.get("source", "Unknown")
+                msg_type = payload.get("type", "visual")
+                
+                with st.expander(f"{source} (Score: {score:.2f})", expanded=True):
+                    col1, col2 = st.columns([1, 1])
+                    with col1:
+                        if msg_type == "image":
+                             path = os.path.join("image_inbox", source)
+                             if os.path.exists(path):
+                                 st.image(path, caption=source, width="stretch")
+                        else: # visual/video
+                             path = os.path.join("video_inbox", source)
+                             if os.path.exists(path):
+                                 st.video(path)
+                    
+                    with col2:
+                        st.caption(f"Timestamp: {payload.get('timestamp')}")
+                        if "detections" in payload:
+                            st.json(payload["detections"])
+
+        if audio_hits:
+            st.markdown("### 📻 Audio Matches")
+            for hit in audio_hits:
+                payload = hit.payload
+                score = hit.score
+                source = payload.get("source", "Unknown")
+                transcript = payload.get("transcript", "No transcript")
+                
+                with st.expander(f"{source} (Score: {score:.2f})", expanded=True):
+                    path = os.path.join("audio_inbox", source)
+                    if os.path.exists(path):
+                        st.audio(path)
+                    st.markdown(f"**Transcript:** {transcript}")
+
+        if text_hits:
+            st.markdown("### 📄 Intel Matches")
+            for hit in text_hits:
+                payload = hit.payload
+                score = hit.score
+                source = payload.get("source", "Unknown")
+                content = payload.get("content", "")
+                
+                with st.expander(f"{source} (Score: {score:.2f})", expanded=True):
+                    st.markdown(content)
+                    
+        if not (vis_hits or audio_hits or text_hits):
+            st.info("No matches found across any channel.")
 
 with tab3:
     st.header("📻 Audio Logs (Radio Transcripts)")

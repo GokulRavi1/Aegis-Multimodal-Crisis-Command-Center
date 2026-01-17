@@ -7,3 +7,4 @@ numpy
 SpeechRecognition
 pydub
 Pillow
+ultralytics

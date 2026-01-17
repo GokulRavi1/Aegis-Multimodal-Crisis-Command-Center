@@ -1,17 +1,21 @@
 import cv2
 import time
 import datetime
+import os
 from PIL import Image
 from qdrant_client import QdrantClient
 from qdrant_client.http import models
 from fastembed import ImageEmbedding
-from typing import Generator, Iterable
+from watchdog.observers import Observer
+from watchdog.events import FileSystemEventHandler
+from ultralytics import YOLOWorld
 
 # Configuration
-VIDEO_PATH = "flood_footage.mp4"
+VIDEO_INBOX = "video_inbox"
 COLLECTION_NAME = "visual_memory"
 QDRANT_URL = "http://localhost:6333"
-FRAME_INTERVAL_SEC = 5
+MODEL_NAME = "yolov8s-worldv2.pt"
+CUSTOM_CLASSES = ["person", "car", "flood", "cyclone", "hurricane"]
 
 def init_qdrant():
     client = QdrantClient(url=QDRANT_URL)
@@ -20,85 +24,108 @@ def init_qdrant():
             collection_name=COLLECTION_NAME,
             vectors_config=models.VectorParams(size=512, distance=models.Distance.COSINE),
         )
-        print(f"Created collection: {COLLECTION_NAME}")
     return client
 
-def process_video(video_path: str) -> Generator[dict, None, None]:
-    cap = cv2.VideoCapture(video_path)
-    if not cap.isOpened():
-        print(f"Error: Could not open video {video_path}")
-        return
+class VideoHandler(FileSystemEventHandler):
+    def __init__(self, client, embed_model, yolo_model):
+        self.client = client
+        self.embed_model = embed_model
+        self.yolo_model = yolo_model
 
-    fps = cap.get(cv2.CAP_PROP_FPS)
-    frame_interval_frames = int(fps * FRAME_INTERVAL_SEC)
-    
-    current_frame = 0
-    simulated_lat = 28.7041
-    simulated_lon = 77.1025
+    def on_created(self, event):
+        if not event.is_directory and event.src_path.lower().endswith(('.mp4', '.avi', '.mov', '.mkv')):
+            print(f"🎬 New video detected: {event.src_path}")
+            self.process_video(event.src_path)
 
-    while cap.isOpened():
-        ret, frame = cap.read()
-        if not ret:
-            break
+    def process_video(self, video_path):
+        cap = cv2.VideoCapture(video_path)
+        if not cap.isOpened():
+            return
 
-        if current_frame % frame_interval_frames == 0:
-            # Simulate movement
-            simulated_lat += 0.001
-            simulated_lon += 0.001
-            
-            timestamp = datetime.datetime.now(datetime.timezone.utc).isoformat()
-            
-            yield {
-                "frame": frame,
-                "payload": {
-                    "source": "Drone-01",
-                    "type": "visual",
-                    "location": {"lat": simulated_lat, "lon": simulated_lon},
-                    "timestamp": timestamp,
-                    "hazard_type": "flood"
-                }
-            }
+        frame_count = 0
+        print(f"⚡ Processing Video: {video_path}...")
         
-        current_frame += 1
+        while cap.isOpened():
+            ret, frame = cap.read()
+            if not ret:
+                break
 
-    cap.release()
+            frame_count += 1
+            if frame_count % 30 != 0:
+                continue
+
+            # Detection
+            results = self.yolo_model.predict(frame, conf=0.1, verbose=False)
+            result = results[0]
+            
+            detections = {}
+            if result.boxes:
+                for cls_id in result.boxes.cls:
+                    name = self.yolo_model.names[int(cls_id)]
+                    detections[name] = detections.get(name, 0) + 1
+            
+            if detections:
+                print(f"   Frame {frame_count}: Found {detections}")
+
+            # Save Latest Frame
+            annotated_frame = result.plot()
+            cv2.imwrite("latest_frame.jpg", annotated_frame)
+            
+            # Embedding
+            frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+            pil_image = Image.fromarray(frame_rgb)
+            embeddings = list(self.embed_model.embed([pil_image]))
+            vector = embeddings[0]
+
+            payload = {
+                "source": os.path.basename(video_path),
+                "type": "visual",
+                "timestamp": datetime.datetime.now(datetime.timezone.utc).isoformat(),
+                "detections": detections,
+                "location": {"lat": 28.7041, "lon": 77.1025}
+            }
+            
+            self.client.upsert(
+                collection_name=COLLECTION_NAME,
+                points=[
+                    models.PointStruct(
+                        id=int(time.time() * 1000),
+                        vector=vector.tolist(),
+                        payload=payload
+                    )
+                ]
+            )
+            
+        cap.release()
+        print(f"✅ Finished Video.")
 
 def main():
-    print("Initializing Watcher Agent...")
+    print("Initializing Watcher Agent (Video Only)...")
+    
+    if not os.path.exists(VIDEO_INBOX):
+        os.makedirs(VIDEO_INBOX)
+        print(f"📂 Created {VIDEO_INBOX}")
+
     client = init_qdrant()
-    embedding_model = ImageEmbedding(model_name="Qdrant/clip-ViT-B-32-vision")
-
-    print(f"Processing video: {VIDEO_PATH}")
-    for item in process_video(VIDEO_PATH):
-        frame = item["frame"]
-        payload = item["payload"]
-        
-        # Convert frame (BGR) to RGB for embedding
-        frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-        
-        # Convert numpy array to PIL Image (fastembed expects PIL Image)
-        pil_image = Image.fromarray(frame_rgb)
-        
-        # Generator for embedding (fastembed expects iterable)
-        embeddings = list(embedding_model.embed([pil_image]))
-        vector = embeddings[0]
-
-        # Upsert to Qdrant
-        point_id = int(time.time() * 1000) # Simple ID based on timestamp
-        client.upsert(
-            collection_name=COLLECTION_NAME,
-            points=[
-                models.PointStruct(
-                    id=point_id,
-                    vector=vector.tolist(),
-                    payload=payload
-                )
-            ]
-        )
-        print(f"Upserted frame at {payload['timestamp']} | Loc: {payload['location']}")
-        
-        # Simulate real-time processing delay if needed, or just run through
-        # time.sleep(1) 
+    
+    print("⏳ Loading Models...")
+    embed_model = ImageEmbedding(model_name="Qdrant/clip-ViT-B-32-vision")
+    yolo_model = YOLOWorld(MODEL_NAME)
+    yolo_model.set_classes(CUSTOM_CLASSES)
+    
+    observer = Observer()
+    handler = VideoHandler(client, embed_model, yolo_model)
+    observer.schedule(handler, VIDEO_INBOX, recursive=False)
+    observer.start()
+    
+    print(f"👀 Monitoring {VIDEO_INBOX} for videos...")
+    
+    try:
+        while True:
+            time.sleep(1)
+    except KeyboardInterrupt:
+        observer.stop()
+    observer.join()
 
 if __name__ == "__main__":
     main()

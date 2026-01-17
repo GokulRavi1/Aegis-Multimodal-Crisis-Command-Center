@@ -2,25 +2,27 @@
 
 A fully offline, edge-first disaster response system  Aegis uses Qdrant as its vector database to process and correlate multimodal data (video, audio, text) for real-time situational awareness during crisis events.
 
-![System Architecture](./docs/architecture.png)
+![System Architecture](system_architecture.png)
 
 ---
 
-## 🎯 Key Features
+## 🧠 AI Models (Hackathon "Speed" Stack)
 
-- Multimodal Ingestion: Process video feeds, audio transcripts, and text reports
-- Geospatial Alerting: Detect civilians in danger zones using GeoRadius queries
-- Semantic Search: Natural language search across all data types
-- Offline-First: Runs entirely locally without internet connectivity
-- Real-time Dashboard: Streamlit-based command center UI
+We explicitly selected the following models to prioritize real-time performance on edge hardware for the hackathon:
 
----
+| Modality | Selected Model (Speed) | Alternative (Accuracy) | Rationale |
+|----------|------------------------|------------------------|-----------|
+| **Text** | `BAAI/bge-small-en-v1.5` | `nomic-embed-text-v1.5` | BGE is faster (optimized for <512 tokens). Nomic supports 8192 tokens for long reports. |
+| **Image** | `Qdrant/clip-ViT-B-32-vision` | `Qdrant/Unicom-ViT-B-32` | CLIP is the standard for speed. Unicom offers better understanding of complex scenes (rubble), but is heavier. |
+| **Video** | `Same as Image` (Frame Indexing) | `Same as Image` | We index video frames using the Image model. |
+| **Audio** | `Whisper` (Speech-to-Text) + `BGE` | `CLAP` | Whisper is robust and safer to implement quickly than CLAP (which allows searching raw sounds like "siren"). |
 
 ## 🏗️ System Architecture
 
 | Agent | Collection | Model | Vector Dims |
 |-------|------------|-------|-------------|
 | `watcher_agent.py` | `visual_memory` | CLIP-ViT-B-32 | 512 |
+| `image_agent.py` | `visual_memory` | CLIP-ViT-B-32 | 512 |
 | `listener_agent.py` | `audio_memory` | BGE-small-en | 384 |
 | `text_agent.py` | `tactical_memory` | BGE-small-en | 384 |
 | `generate_civilians.py` | `civilian_memory` | (geo only) | 1 |
