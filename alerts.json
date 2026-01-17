@@ -1,0 +1,652 @@
+[
+  {
+    "timestamp": "2026-01-15T14:40:52.034132+00:00",
+    "msg": "URGENT: Civilian Group 17 is within 5.0km of flood!",
+    "civilian_id": "f989afca-eed5-4416-b69a-2fd799ce910b",
+    "hazard_location": {
+      "lat": 28.7051,
+      "lon": 77.10350000000001
+    },
+    "civilian_location": {
+      "lat": 28.730461729520503,
+      "lon": 77.07182644321719
+    }
+  },
+  {
+    "timestamp": "2026-01-15T14:40:52.031344+00:00",
+    "msg": "URGENT: Civilian Group 1 is within 5.0km of flood!",
+    "civilian_id": "f86cf24c-d669-4e2c-92bc-64a1e12634b9",
+    "hazard_location": {
+      "lat": 28.7051,
+      "lon": 77.10350000000001
+    },
+    "civilian_location": {
+      "lat": 28.734504300147968,
+      "lon": 77.12001825323563
+    }
+  },
+  {
+    "timestamp": "2026-01-15T14:40:52.026692+00:00",
+    "msg": "URGENT: Civilian Group 9 is within 5.0km of flood!",
+    "civilian_id": "f6126f74-e258-4e5d-a724-b59f14d7dda2",
+    "hazard_location": {
+      "lat": 28.7051,
+      "lon": 77.10350000000001
+    },
+    "civilian_location": {
+      "lat": 28.730094723762523,
+      "lon": 77.09948324671727
+    }
+  },
+  {
+    "timestamp": "2026-01-15T14:40:52.025494+00:00",
+    "msg": "URGENT: Civilian Group 6 is within 5.0km of flood!",
+    "civilian_id": "f1882546-9a0d-4849-9a62-ca6eedf8c939",
+    "hazard_location": {
+      "lat": 28.7051,
+      "lon": 77.10350000000001
+    },
+    "civilian_location": {
+      "lat": 28.6910485029235,
+      "lon": 77.0622944946475
+    }
+  },
+  {
+    "timestamp": "2026-01-15T14:40:52.022931+00:00",
+    "msg": "URGENT: Civilian Group 15 is within 5.0km of flood!",
+    "civilian_id": "dbf1d485-5beb-4e3b-874a-f4fdca0cc3b8",
+    "hazard_location": {
+      "lat": 28.7051,
+      "lon": 77.10350000000001
+    },
+    "civilian_location": {
+      "lat": 28.704858571546893,
+      "lon": 77.13448689722635
+    }
+  },
+  {
+    "timestamp": "2026-01-15T14:40:52.019279+00:00",
+    "msg": "URGENT: Civilian Group 17 is within 5.0km of flood!",
+    "civilian_id": "c292c864-ec09-4841-934d-68869d6914c8",
+    "hazard_location": {
+      "lat": 28.7051,
+      "lon": 77.10350000000001
+    },
+    "civilian_location": {
+      "lat": 28.72071327448672,
+      "lon": 77.09446803467358
+    }
+  },
+  {
+    "timestamp": "2026-01-15T14:40:52.015841+00:00",
+    "msg": "URGENT: Civilian Group 13 is within 5.0km of flood!",
+    "civilian_id": "beed961f-8f40-4947-8f2e-20a1f3f0dfae",
+    "hazard_location": {
+      "lat": 28.7051,
+      "lon": 77.10350000000001
+    },
+    "civilian_location": {
+      "lat": 28.702182797985543,
+      "lon": 77.09998428909658
+    }
+  },
+  {
+    "timestamp": "2026-01-15T14:40:52.013361+00:00",
+    "msg": "URGENT: Civilian Group 19 is within 5.0km of flood!",
+    "civilian_id": "b98da74e-0ec9-4e8e-b248-a3166b5e65e0",
+    "hazard_location": {
+      "lat": 28.7051,
+      "lon": 77.10350000000001
+    },
+    "civilian_location": {
+      "lat": 28.679441143911873,
+      "lon": 77.08683276456647
+    }
+  },
+  {
+    "timestamp": "2026-01-15T14:40:52.010104+00:00",
+    "msg": "URGENT: Civilian Group 16 is within 5.0km of flood!",
+    "civilian_id": "b981e3c3-60a8-4f72-b4b2-1d9a1eb4ff7d",
+    "hazard_location": {
+      "lat": 28.7051,
+      "lon": 77.10350000000001
+    },
+    "civilian_location": {
+      "lat": 28.69592168035394,
+      "lon": 77.0906489749139
+    }
+  },
+  {
+    "timestamp": "2026-01-15T14:40:52.006373+00:00",
+    "msg": "URGENT: Civilian Group 12 is within 5.0km of flood!",
+    "civilian_id": "a8d38060-a702-488c-aab6-f873137cf580",
+    "hazard_location": {
+      "lat": 28.7051,
+      "lon": 77.10350000000001
+    },
+    "civilian_location": {
+      "lat": 28.699679900090572,
+      "lon": 77.12112767279433
+    }
+  },
+  {
+    "timestamp": "2026-01-15T14:40:52.003318+00:00",
+    "msg": "URGENT: Civilian Group 7 is within 5.0km of flood!",
+    "civilian_id": "a21badd5-cf38-4303-8897-daa77388dadd",
+    "hazard_location": {
+      "lat": 28.7051,
+      "lon": 77.10350000000001
+    },
+    "civilian_location": {
+      "lat": 28.743283287640544,
+      "lon": 77.10500154672033
+    }
+  },
+  {
+    "timestamp": "2026-01-15T14:40:52.001037+00:00",
+    "msg": "URGENT: Civilian Group 16 is within 5.0km of flood!",
+    "civilian_id": "a1868ee7-3617-4e08-9feb-3151832b2714",
+    "hazard_location": {
+      "lat": 28.7051,
+      "lon": 77.10350000000001
+    },
+    "civilian_location": {
+      "lat": 28.74256488085072,
+      "lon": 77.1054568803263
+    }
+  },
+  {
+    "timestamp": "2026-01-15T14:40:51.997879+00:00",
+    "msg": "URGENT: Civilian Group 4 is within 5.0km of flood!",
+    "civilian_id": "9e8f0e8f-72af-4d1d-95eb-e54a73997b50",
+    "hazard_location": {
+      "lat": 28.7051,
+      "lon": 77.10350000000001
+    },
+    "civilian_location": {
+      "lat": 28.67344523496469,
+      "lon": 77.13086625508802
+    }
+  },
+  {
+    "timestamp": "2026-01-15T14:40:51.995240+00:00",
+    "msg": "URGENT: Civilian Group 8 is within 5.0km of flood!",
+    "civilian_id": "9d134988-033f-442c-bdb6-d08450f044ea",
+    "hazard_location": {
+      "lat": 28.7051,
+      "lon": 77.10350000000001
+    },
+    "civilian_location": {
+      "lat": 28.702648244948172,
+      "lon": 77.1207851223904
+    }
+  },
+  {
+    "timestamp": "2026-01-15T14:40:51.991929+00:00",
+    "msg": "URGENT: Civilian Group 18 is within 5.0km of flood!",
+    "civilian_id": "939f53db-d9f4-4583-aa9f-9c814c36c233",
+    "hazard_location": {
+      "lat": 28.7051,
+      "lon": 77.10350000000001
+    },
+    "civilian_location": {
+      "lat": 28.73339162167908,
+      "lon": 77.13946158385251
+    }
+  },
+  {
+    "timestamp": "2026-01-15T14:40:51.989573+00:00",
+    "msg": "URGENT: Civilian Group 6 is within 5.0km of flood!",
+    "civilian_id": "86f99b15-87a9-479d-8518-c8eed88d94f1",
+    "hazard_location": {
+      "lat": 28.7051,
+      "lon": 77.10350000000001
+    },
+    "civilian_location": {
+      "lat": 28.734788829646675,
+      "lon": 77.10095296095909
+    }
+  },
+  {
+    "timestamp": "2026-01-15T14:40:51.984508+00:00",
+    "msg": "URGENT: Civilian Group 20 is within 5.0km of flood!",
+    "civilian_id": "82c1bdfc-58f4-40e8-80ae-89b168f40d7f",
+    "hazard_location": {
+      "lat": 28.7051,
+      "lon": 77.10350000000001
+    },
+    "civilian_location": {
+      "lat": 28.70036907537042,
+      "lon": 77.09643451743067
+    }
+  },
+  {
+    "timestamp": "2026-01-15T14:40:51.981509+00:00",
+    "msg": "URGENT: Civilian Group 5 is within 5.0km of flood!",
+    "civilian_id": "6769e19c-8c95-4f9d-9e5e-e60c7bfec09d",
+    "hazard_location": {
+      "lat": 28.7051,
+      "lon": 77.10350000000001
+    },
+    "civilian_location": {
+      "lat": 28.67475048047151,
+      "lon": 77.09311703609589
+    }
+  },
+  {
+    "timestamp": "2026-01-15T14:40:51.978090+00:00",
+    "msg": "URGENT: Civilian Group 5 is within 5.0km of flood!",
+    "civilian_id": "6395a25d-48d4-4165-889b-fc12a75c8e8d",
+    "hazard_location": {
+      "lat": 28.7051,
+      "lon": 77.10350000000001
+    },
+    "civilian_location": {
+      "lat": 28.697520430945673,
+      "lon": 77.10476794237563
+    }
+  },
+  {
+    "timestamp": "2026-01-15T14:40:51.973756+00:00",
+    "msg": "URGENT: Civilian Group 19 is within 5.0km of flood!",
+    "civilian_id": "54561f85-7263-4072-b9cd-75cff7ae01c5",
+    "hazard_location": {
+      "lat": 28.7051,
+      "lon": 77.10350000000001
+    },
+    "civilian_location": {
+      "lat": 28.7137052640548,
+      "lon": 77.08089601077214
+    }
+  },
+  {
+    "timestamp": "2026-01-15T14:40:51.972718+00:00",
+    "msg": "URGENT: Civilian Group 8 is within 5.0km of flood!",
+    "civilian_id": "5083af0c-448e-4fc4-bb31-40e086bfd720",
+    "hazard_location": {
+      "lat": 28.7051,
+      "lon": 77.10350000000001
+    },
+    "civilian_location": {
+      "lat": 28.675197794327275,
+      "lon": 77.12968055196627
+    }
+  },
+  {
+    "timestamp": "2026-01-15T14:40:51.967017+00:00",
+    "msg": "URGENT: Civilian Group 11 is within 5.0km of flood!",
+    "civilian_id": "30ee776e-22c6-44b5-8443-9de793f6d643",
+    "hazard_location": {
+      "lat": 28.7051,
+      "lon": 77.10350000000001
+    },
+    "civilian_location": {
+      "lat": 28.67117186385662,
+      "lon": 77.11882946629657
+    }
+  },
+  {
+    "timestamp": "2026-01-15T14:40:51.967017+00:00",
+    "msg": "URGENT: Civilian Group 2 is within 5.0km of flood!",
+    "civilian_id": "2d58b80a-fc3e-402f-afbb-ecb3168cf45c",
+    "hazard_location": {
+      "lat": 28.7051,
+      "lon": 77.10350000000001
+    },
+    "civilian_location": {
+      "lat": 28.695718199395255,
+      "lon": 77.12693079836558
+    }
+  },
+  {
+    "timestamp": "2026-01-15T14:40:51.964492+00:00",
+    "msg": "URGENT: Civilian Group 2 is within 5.0km of flood!",
+    "civilian_id": "253aaa74-5953-4734-97e9-6c2605e22d3c",
+    "hazard_location": {
+      "lat": 28.7051,
+      "lon": 77.10350000000001
+    },
+    "civilian_location": {
+      "lat": 28.737413670356872,
+      "lon": 77.11986109217462
+    }
+  },
+  {
+    "timestamp": "2026-01-15T14:40:51.960894+00:00",
+    "msg": "URGENT: Civilian Group 10 is within 5.0km of flood!",
+    "civilian_id": "1985ddf8-47fe-4c81-8514-b3ef4679d714",
+    "hazard_location": {
+      "lat": 28.7051,
+      "lon": 77.10350000000001
+    },
+    "civilian_location": {
+      "lat": 28.66716791536035,
+      "lon": 77.10015049589535
+    }
+  },
+  {
+    "timestamp": "2026-01-15T14:40:51.958346+00:00",
+    "msg": "URGENT: Civilian Group 14 is within 5.0km of flood!",
+    "civilian_id": "00b9e50d-1d69-45d5-83ba-7524fce28240",
+    "hazard_location": {
+      "lat": 28.7051,
+      "lon": 77.10350000000001
+    },
+    "civilian_location": {
+      "lat": 28.701797582023296,
+      "lon": 77.06809996002887
+    }
+  },
+  {
+    "timestamp": "2026-01-15T14:40:46.915543+00:00",
+    "msg": "URGENT: Civilian Group 17 is within 5.0km of flood!",
+    "civilian_id": "f989afca-eed5-4416-b69a-2fd799ce910b",
+    "hazard_location": {
+      "lat": 28.7051,
+      "lon": 77.10350000000001
+    },
+    "civilian_location": {
+      "lat": 28.730461729520503,
+      "lon": 77.07182644321719
+    }
+  },
+  {
+    "timestamp": "2026-01-15T14:40:46.911452+00:00",
+    "msg": "URGENT: Civilian Group 1 is within 5.0km of flood!",
+    "civilian_id": "f86cf24c-d669-4e2c-92bc-64a1e12634b9",
+    "hazard_location": {
+      "lat": 28.7051,
+      "lon": 77.10350000000001
+    },
+    "civilian_location": {
+      "lat": 28.734504300147968,
+      "lon": 77.12001825323563
+    }
+  },
+  {
+    "timestamp": "2026-01-15T14:40:46.909934+00:00",
+    "msg": "URGENT: Civilian Group 9 is within 5.0km of flood!",
+    "civilian_id": "f6126f74-e258-4e5d-a724-b59f14d7dda2",
+    "hazard_location": {
+      "lat": 28.7051,
+      "lon": 77.10350000000001
+    },
+    "civilian_location": {
+      "lat": 28.730094723762523,
+      "lon": 77.09948324671727
+    }
+  },
+  {
+    "timestamp": "2026-01-15T14:40:46.907234+00:00",
+    "msg": "URGENT: Civilian Group 6 is within 5.0km of flood!",
+    "civilian_id": "f1882546-9a0d-4849-9a62-ca6eedf8c939",
+    "hazard_location": {
+      "lat": 28.7051,
+      "lon": 77.10350000000001
+    },
+    "civilian_location": {
+      "lat": 28.6910485029235,
+      "lon": 77.0622944946475
+    }
+  },
+  {
+    "timestamp": "2026-01-15T14:40:46.902977+00:00",
+    "msg": "URGENT: Civilian Group 15 is within 5.0km of flood!",
+    "civilian_id": "dbf1d485-5beb-4e3b-874a-f4fdca0cc3b8",
+    "hazard_location": {
+      "lat": 28.7051,
+      "lon": 77.10350000000001
+    },
+    "civilian_location": {
+      "lat": 28.704858571546893,
+      "lon": 77.13448689722635
+    }
+  },
+  {
+    "timestamp": "2026-01-15T14:40:46.901079+00:00",
+    "msg": "URGENT: Civilian Group 17 is within 5.0km of flood!",
+    "civilian_id": "c292c864-ec09-4841-934d-68869d6914c8",
+    "hazard_location": {
+      "lat": 28.7051,
+      "lon": 77.10350000000001
+    },
+    "civilian_location": {
+      "lat": 28.72071327448672,
+      "lon": 77.09446803467358
+    }
+  },
+  {
+    "timestamp": "2026-01-15T14:40:46.897700+00:00",
+    "msg": "URGENT: Civilian Group 13 is within 5.0km of flood!",
+    "civilian_id": "beed961f-8f40-4947-8f2e-20a1f3f0dfae",
+    "hazard_location": {
+      "lat": 28.7051,
+      "lon": 77.10350000000001
+    },
+    "civilian_location": {
+      "lat": 28.702182797985543,
+      "lon": 77.09998428909658
+    }
+  },
+  {
+    "timestamp": "2026-01-15T14:40:46.894487+00:00",
+    "msg": "URGENT: Civilian Group 19 is within 5.0km of flood!",
+    "civilian_id": "b98da74e-0ec9-4e8e-b248-a3166b5e65e0",
+    "hazard_location": {
+      "lat": 28.7051,
+      "lon": 77.10350000000001
+    },
+    "civilian_location": {
+      "lat": 28.679441143911873,
+      "lon": 77.08683276456647
+    }
+  },
+  {
+    "timestamp": "2026-01-15T14:40:46.892205+00:00",
+    "msg": "URGENT: Civilian Group 16 is within 5.0km of flood!",
+    "civilian_id": "b981e3c3-60a8-4f72-b4b2-1d9a1eb4ff7d",
+    "hazard_location": {
+      "lat": 28.7051,
+      "lon": 77.10350000000001
+    },
+    "civilian_location": {
+      "lat": 28.69592168035394,
+      "lon": 77.0906489749139
+    }
+  },
+  {
+    "timestamp": "2026-01-15T14:40:46.889425+00:00",
+    "msg": "URGENT: Civilian Group 12 is within 5.0km of flood!",
+    "civilian_id": "a8d38060-a702-488c-aab6-f873137cf580",
+    "hazard_location": {
+      "lat": 28.7051,
+      "lon": 77.10350000000001
+    },
+    "civilian_location": {
+      "lat": 28.699679900090572,
+      "lon": 77.12112767279433
+    }
+  },
+  {
+    "timestamp": "2026-01-15T14:40:46.887858+00:00",
+    "msg": "URGENT: Civilian Group 7 is within 5.0km of flood!",
+    "civilian_id": "a21badd5-cf38-4303-8897-daa77388dadd",
+    "hazard_location": {
+      "lat": 28.7051,
+      "lon": 77.10350000000001
+    },
+    "civilian_location": {
+      "lat": 28.743283287640544,
+      "lon": 77.10500154672033
+    }
+  },
+  {
+    "timestamp": "2026-01-15T14:40:46.884353+00:00",
+    "msg": "URGENT: Civilian Group 16 is within 5.0km of flood!",
+    "civilian_id": "a1868ee7-3617-4e08-9feb-3151832b2714",
+    "hazard_location": {
+      "lat": 28.7051,
+      "lon": 77.10350000000001
+    },
+    "civilian_location": {
+      "lat": 28.74256488085072,
+      "lon": 77.1054568803263
+    }
+  },
+  {
+    "timestamp": "2026-01-15T14:40:46.881941+00:00",
+    "msg": "URGENT: Civilian Group 4 is within 5.0km of flood!",
+    "civilian_id": "9e8f0e8f-72af-4d1d-95eb-e54a73997b50",
+    "hazard_location": {
+      "lat": 28.7051,
+      "lon": 77.10350000000001
+    },
+    "civilian_location": {
+      "lat": 28.67344523496469,
+      "lon": 77.13086625508802
+    }
+  },
+  {
+    "timestamp": "2026-01-15T14:40:46.879279+00:00",
+    "msg": "URGENT: Civilian Group 8 is within 5.0km of flood!",
+    "civilian_id": "9d134988-033f-442c-bdb6-d08450f044ea",
+    "hazard_location": {
+      "lat": 28.7051,
+      "lon": 77.10350000000001
+    },
+    "civilian_location": {
+      "lat": 28.702648244948172,
+      "lon": 77.1207851223904
+    }
+  },
+  {
+    "timestamp": "2026-01-15T14:40:46.876600+00:00",
+    "msg": "URGENT: Civilian Group 18 is within 5.0km of flood!",
+    "civilian_id": "939f53db-d9f4-4583-aa9f-9c814c36c233",
+    "hazard_location": {
+      "lat": 28.7051,
+      "lon": 77.10350000000001
+    },
+    "civilian_location": {
+      "lat": 28.73339162167908,
+      "lon": 77.13946158385251
+    }
+  },
+  {
+    "timestamp": "2026-01-15T14:40:46.873366+00:00",
+    "msg": "URGENT: Civilian Group 6 is within 5.0km of flood!",
+    "civilian_id": "86f99b15-87a9-479d-8518-c8eed88d94f1",
+    "hazard_location": {
+      "lat": 28.7051,
+      "lon": 77.10350000000001
+    },
+    "civilian_location": {
+      "lat": 28.734788829646675,
+      "lon": 77.10095296095909
+    }
+  },
+  {
+    "timestamp": "2026-01-15T14:40:46.869984+00:00",
+    "msg": "URGENT: Civilian Group 20 is within 5.0km of flood!",
+    "civilian_id": "82c1bdfc-58f4-40e8-80ae-89b168f40d7f",
+    "hazard_location": {
+      "lat": 28.7051,
+      "lon": 77.10350000000001
+    },
+    "civilian_location": {
+      "lat": 28.70036907537042,
+      "lon": 77.09643451743067
+    }
+  },
+  {
+    "timestamp": "2026-01-15T14:40:46.867035+00:00",
+    "msg": "URGENT: Civilian Group 5 is within 5.0km of flood!",
+    "civilian_id": "6769e19c-8c95-4f9d-9e5e-e60c7bfec09d",
+    "hazard_location": {
+      "lat": 28.7051,
+      "lon": 77.10350000000001
+    },
+    "civilian_location": {
+      "lat": 28.67475048047151,
+      "lon": 77.09311703609589
+    }
+  },
+  {
+    "timestamp": "2026-01-15T14:40:46.865506+00:00",
+    "msg": "URGENT: Civilian Group 5 is within 5.0km of flood!",
+    "civilian_id": "6395a25d-48d4-4165-889b-fc12a75c8e8d",
+    "hazard_location": {
+      "lat": 28.7051,
+      "lon": 77.10350000000001
+    },
+    "civilian_location": {
+      "lat": 28.697520430945673,
+      "lon": 77.10476794237563
+    }
+  },
+  {
+    "timestamp": "2026-01-15T14:40:46.862430+00:00",
+    "msg": "URGENT: Civilian Group 19 is within 5.0km of flood!",
+    "civilian_id": "54561f85-7263-4072-b9cd-75cff7ae01c5",
+    "hazard_location": {
+      "lat": 28.7051,
+      "lon": 77.10350000000001
+    },
+    "civilian_location": {
+      "lat": 28.7137052640548,
+      "lon": 77.08089601077214
+    }
+  },
+  {
+    "timestamp": "2026-01-15T14:40:46.860513+00:00",
+    "msg": "URGENT: Civilian Group 8 is within 5.0km of flood!",
+    "civilian_id": "5083af0c-448e-4fc4-bb31-40e086bfd720",
+    "hazard_location": {
+      "lat": 28.7051,
+      "lon": 77.10350000000001
+    },
+    "civilian_location": {
+      "lat": 28.675197794327275,
+      "lon": 77.12968055196627
+    }
+  },
+  {
+    "timestamp": "2026-01-15T14:40:46.858073+00:00",
+    "msg": "URGENT: Civilian Group 11 is within 5.0km of flood!",
+    "civilian_id": "30ee776e-22c6-44b5-8443-9de793f6d643",
+    "hazard_location": {
+      "lat": 28.7051,
+      "lon": 77.10350000000001
+    },
+    "civilian_location": {
+      "lat": 28.67117186385662,
+      "lon": 77.11882946629657
+    }
+  },
+  {
+    "timestamp": "2026-01-15T14:40:46.854445+00:00",
+    "msg": "URGENT: Civilian Group 2 is within 5.0km of flood!",
+    "civilian_id": "2d58b80a-fc3e-402f-afbb-ecb3168cf45c",
+    "hazard_location": {
+      "lat": 28.7051,
+      "lon": 77.10350000000001
+    },
+    "civilian_location": {
+      "lat": 28.695718199395255,
+      "lon": 77.12693079836558
+    }
+  },
+  {
+    "timestamp": "2026-01-15T14:40:46.852493+00:00",
+    "msg": "URGENT: Civilian Group 2 is within 5.0km of flood!",
+    "civilian_id": "253aaa74-5953-4734-97e9-6c2605e22d3c",
+    "hazard_location": {
+      "lat": 28.7051,
+      "lon": 77.10350000000001
+    },
+    "civilian_location": {
+      "lat": 28.737413670356872,
+      "lon": 77.11986109217462
+    }
+  }
+]

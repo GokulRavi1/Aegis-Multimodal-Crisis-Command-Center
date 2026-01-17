@@ -7,12 +7,6 @@ __pycache__/
 venv/
 ENV/
 
-# Qdrant storage (auto-generated)
-qdrant_storage/
-
-# Generated files
-flood_footage.mp4
-alerts.json
 
 # IDE
 .vscode/

@@ -1,6 +1,6 @@
 # 🛡️ Aegis – Multimodal Crisis Command Center
 
-A fully offline, edge-first disaster response system built for the **Convolve 4.0 Hackathon**. Aegis uses **Qdrant** as its vector database to process and correlate multimodal data (video, audio, text) for real-time situational awareness during crisis events.
+A fully offline, edge-first disaster response system  Aegis uses Qdrant as its vector database to process and correlate multimodal data (video, audio, text) for real-time situational awareness during crisis events.
 
 ![System Architecture](./docs/architecture.png)
 
@@ -8,11 +8,11 @@ A fully offline, edge-first disaster response system built for the **Convolve 4.
 
 ## 🎯 Key Features
 
-- **Multimodal Ingestion**: Process video feeds, audio transcripts, and text reports
-- **Geospatial Alerting**: Detect civilians in danger zones using GeoRadius queries
-- **Semantic Search**: Natural language search across all data types
-- **Offline-First**: Runs entirely locally without internet connectivity
-- **Real-time Dashboard**: Streamlit-based command center UI
+- Multimodal Ingestion: Process video feeds, audio transcripts, and text reports
+- Geospatial Alerting: Detect civilians in danger zones using GeoRadius queries
+- Semantic Search: Natural language search across all data types
+- Offline-First: Runs entirely locally without internet connectivity
+- Real-time Dashboard: Streamlit-based command center UI
 
 ---
 
@@ -115,6 +115,4 @@ Aegis/
 
 ---
 
-## 📜 License
 
-MIT License - Built for Convolve 4.0 Hackathon
