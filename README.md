@@ -1,120 +1,95 @@
 # 🛡️ Aegis – Multimodal Crisis Command Center
 
-A fully offline, edge-first disaster response system  Aegis uses Qdrant as its vector database to process and correlate multimodal data (video, audio, text) for real-time situational awareness during crisis events.
+**Aegis** is an AI-powered Situation Awareness system designed for crisis management. It fuses data from **Video, Image, Audio, and Text** sources into a unified vector database to provide real-time intelligence and semantic search capabilities.
 
 ![System Architecture](system_architecture.png)
 
----
+## 🚀 Features
 
-## 🧠 AI Models (Hackathon "Speed" Stack)
+### 1. Multimodal Ingestion Agents
+*   **🎥 Watcher Agent (`watcher_agent.py`)**: Monitors video feeds (drones/CCTV), detects hazards (YOLO-World), and indexes frames (CLIP) into Qdrant.
+*   **🖼️ Image Agent (`image_agent.py`)**: Processes static imagery from field operatives, detecting objects and embedding semantic content.
+*   **📻 Listener Agent (`listener_agent.py`)**: Transcribes radio/audio logs (SpeechRecognition) and embeds transcripts (BGE) for search.
+*   **📄 Text Agent (`text_agent.py`)**: Ingests social media, SITREPs, and logs, embedding them for tactical retrieval.
 
-We explicitly selected the following models to prioritize real-time performance on edge hardware for the hackathon:
+### 2. Intelligent Core
+*   **Vector Database**: **Qdrant Cloud** stores embeddings for high-speed similarity search.
+*   **AI Models**:
+    *   **Contextual Understanding**: `BAAI/bge-small-en-v1.5` (Text/Audio).
+    *   **Visual Understanding**: `Qdrant/clip-ViT-B-32-vision` (Video/Image).
+    *   **Object Detection**: `YOLO-World` (Real-time custom vocabulary detection).
 
-| Modality | Selected Model (Speed) | Alternative (Accuracy) | Rationale |
-|----------|------------------------|------------------------|-----------|
-| **Text** | `BAAI/bge-small-en-v1.5` | `nomic-embed-text-v1.5` | BGE is faster (optimized for <512 tokens). Nomic supports 8192 tokens for long reports. |
-| **Image** | `Qdrant/clip-ViT-B-32-vision` | `Qdrant/Unicom-ViT-B-32` | CLIP is the standard for speed. Unicom offers better understanding of complex scenes (rubble), but is heavier. |
-| **Video** | `Same as Image` (Frame Indexing) | `Same as Image` | We index video frames using the Image model. |
-| **Audio** | `Whisper` (Speech-to-Text) + `BGE` | `CLAP` | Whisper is robust and safer to implement quickly than CLAP (which allows searching raw sounds like "siren"). |
-
-## 🏗️ System Architecture
-
-| Agent | Collection | Model | Vector Dims |
-|-------|------------|-------|-------------|
-| `watcher_agent.py` | `visual_memory` | CLIP-ViT-B-32 | 512 |
-| `image_agent.py` | `visual_memory` | CLIP-ViT-B-32 | 512 |
-| `listener_agent.py` | `audio_memory` | BGE-small-en | 384 |
-| `text_agent.py` | `tactical_memory` | BGE-small-en | 384 |
-| `generate_civilians.py` | `civilian_memory` | (geo only) | 1 |
-| `safety_agent.py` | (reads all) | N/A | N/A |
+### 3. Command Dashboard
+*   **📍 Crisis Operational Map**: Real-time geospatial view of hazards and civilians.
+*   **🔍 Semantic Search**: Natural language search across ALL modalities (e.g., "show me collapsed bridges" finds video frames and radio logs).
+*   **Relevance Filtering**: Automatically filters low-confidence results to reduce noise.
 
 ---
 
-## 🚀 Quick Start
+## 🛠️ Setup & Installation
 
-### Prerequisites
-- Python 3.10+
-- Docker Desktop
+### 1. Prerequisites
+*   Python 3.10+
+*   [Qdrant Cloud Account](https://cloud.qdrant.io/) (Free Tier is sufficient)
 
-### Step 1: Start Qdrant
-```bash
-docker-compose up -d
-```
-Wait for the container to be ready. Verify at: http://localhost:6333/dashboard
-
-### Step 2: Install Dependencies
+### 2. Install Dependencies
 ```bash
 pip install -r requirements.txt
 ```
 
-### Step 3: Generate Test Video
-```bash
-python create_test_video.py
+### 3. Configuration
+Create a `.env` file in the root directory (copy from `.env.example` if available) and add your Qdrant Cloud credentials:
+
+```ini
+QDRANT_URL=https://your-cluster-url.qdrant.io:6333
+QDRANT_API_KEY=your-api-key
 ```
 
-### Step 4: Seed Civilian Data
-```bash
-python generate_civilians.py
-```
+### 4. Running the System
+Open separate terminals for each agent to simulate parallel ingestion:
 
-### Step 5: Run Video Ingestion
+**Terminal 1 (Visual Intelligence):**
 ```bash
 python watcher_agent.py
 ```
+*(Monitors `video_inbox/`)*
 
-### Step 6: Run Audio Ingestion
+**Terminal 2 (Image Intelligence):**
+```bash
+python image_agent.py
+```
+*(Monitors `image_inbox/`)*
+
+**Terminal 3 (Audio Intelligence):**
 ```bash
 python listener_agent.py
 ```
+*(Monitors `audio_inbox/`)*
 
-### Step 7: Run Text Ingestion
+**Terminal 4 (Text Intelligence):**
 ```bash
 python text_agent.py
 ```
+*(Monitors `text_inbox/`)*
 
-### Step 8: Start Safety Agent (Background)
-```bash
-python safety_agent.py
-```
-> Keep this running in a separate terminal. It monitors for civilians in danger.
-
-### Step 9: Launch Dashboard
+**Terminal 5 (Dashboard):**
 ```bash
 streamlit run dashboard.py
 ```
-Open http://localhost:8501 in your browser.
 
 ---
 
-## 📁 Project Structure
+## 📂 Project Structure
 
-```
-Aegis/
-├── docker-compose.yml      # Qdrant container config
-├── requirements.txt        # Python dependencies
-├── create_test_video.py    # Generates dummy flood footage
-├── generate_civilians.py   # Seeds civilian data
-├── watcher_agent.py        # Video → visual_memory
-├── listener_agent.py       # Audio → audio_memory  
-├── text_agent.py           # Text → tactical_memory
-├── safety_agent.py         # Geofencing & alerts
-├── dashboard.py            # Streamlit UI
-├── alerts.json             # Generated alert logs
-└── qdrant_storage/         # Qdrant data (auto-created)
-```
+*   `_inbox/` folders: Drop files here to simulate incoming data streams.
+*   `config.py`: Centralized configuration for cloud connections.
+*   `dashboard.py`: Streamlit-based user interface.
+*   `generate_civilians.py`: Utility to generate synthetic civilian location data.
 
----
+## 🧠 AI Stack Rationale
 
-## 🔧 Technical Stack
-
-| Component | Technology |
-|-----------|------------|
-| Vector DB | Qdrant (Docker) |
-| Embeddings | FastEmbed (CLIP, BGE) |
-| Frontend | Streamlit |
-| Video Processing | OpenCV |
-| Geospatial | Qdrant GeoRadius |
-
----
-
-
+| Component | Model/Tool | Reason |
+| :--- | :--- | :--- |
+| **Embeddings** | FastEmbed (BGE & CLIP) | Lightweight, fast CPU inference, no external API costs (runs locally). |
+| **Object Detection** | YOLO-World | "Open Vocabulary" detection allows searching for new hazards (e.g., "cyclone") without retraining. |
+| **Vector DB** | Qdrant | Efficient storage and retrieval of high-dimensional vectors with metadata filtering. |
