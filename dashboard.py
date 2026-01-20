@@ -111,16 +111,20 @@ with tab1:
     except Exception as e:
         st.error(f"Error fetching map data: {e}")
 
+try:
+    from groq import Groq
+    GROQ_AVAILABLE = True
+except ImportError:
+    GROQ_AVAILABLE = False
+
 with tab2:
     st.header("🔍 Semantic Search")
     query = st.text_input("Search the Warzone", placeholder="e.g., 'Show me fire' or 'flooded streets'")
     
     if query:
         st.subheader("Results")
-    if query:
-        st.subheader("Results")
         
-        # Threshold for relevance (Adjusted for CLIP/BGE)
+        # Threshold for relevance
         SCORE_THRESHOLD = 0.22 
         
         # --- 1. Visual Search (CLIP) ---
@@ -162,7 +166,7 @@ with tab2:
                         if msg_type == "image":
                              path = os.path.join("image_inbox", source)
                              if os.path.exists(path):
-                                 st.image(path, caption=source, width="stretch")
+                                 st.image(path, caption=source, width=300)
                         else: # visual/video
                              path = os.path.join("video_inbox", source)
                              if os.path.exists(path):
@@ -197,9 +201,81 @@ with tab2:
                 
                 with st.expander(f"{source} (Score: {score:.2f})", expanded=True):
                     st.markdown(content)
-                    
-        if not (vis_hits or audio_hits or text_hits):
-            st.info("No matches found across any channel.")
+
+        # --- AI Analysis (Automatic) ---
+        if vis_hits or audio_hits or text_hits:
+            st.markdown("---")
+            st.subheader("🤖 Aegis Tactical Analysis")
+            
+            if GROQ_AVAILABLE:
+                groq_key = os.getenv("GROQ_API_KEY")
+                if not groq_key:
+                     st.error("❌ Groq API Key missing.")
+                else:
+                    try:
+                        g_client = Groq(api_key=groq_key)
+                        
+                        # Build Context
+                        context_lines = [f"SEARCH_QUERY: {query}"]
+                        
+                        for h in vis_hits:
+                            p = h.payload
+                            context_lines.append(f"[VISUAL] {p.get('timestamp')}: {p.get('detected_disaster', 'unknown')} (Conf: {p.get('confidence', {}).get('visual', 0):.2f}). Detections: {p.get('detections')}")
+
+                        for h in audio_hits:
+                            p = h.payload
+                            context_lines.append(f"[AUDIO] {p.get('timestamp')}: {p.get('detected_disaster', 'unknown')}. Transcript: {p.get('transcript')}")
+                            
+                        for h in text_hits:
+                            p = h.payload
+                            context_lines.append(f"[TEXT] {p.get('timestamp')}: {p.get('detected_disaster', 'unknown')}. Content: {p.get('content')}")
+                        
+                        context_str = "\n".join(context_lines)
+                        
+                        system_prompt = """You are the Aegis AI Disaster Response Commander.
+                        Your goal is to explicitly DETECT, CLASSIFY, and ANNOTATE disaster types from multimodal data.
+                        
+                        **Supported Disaster Types**:
+                        - Fire (Wildfire, Building): Visual(flames/smoke), Audio(crackling/sirens), Text(burning/evacuate)
+                        - Flood (Flash, River): Visual(submerged), Audio(rushing water), Text(overflow)
+                        - Cyclone/Hurricane: Visual(whirling clouds), Audio(wind/alerts)
+                        - Earthquake: Visual(rubble), Audio(rumbling)
+                        - Landslide/Avalanche: Visual(debris flow)
+                        - Tornado: Visual(funnel)
+                        - Tsunami: Visual(waves)
+                        - Explosion: Visual(blast/crater)
+                        - Medical: Visual(injuries/ambulances)
+
+                        **Mission**:
+                        1. **Correlate Cues**: If Visual shows 'Fire' and Audio has 'Sirens', confirm 'Active Fire Emergency'.
+                        2. **Summarize**: Unified timeline of events.
+                        3. **Advise**: 3 Specific Tactical Actions based on the disaster type.
+                        
+                        Return a clean, formatted Markdown report."""
+                        
+                        with st.spinner("🤖 Correlating Multimodal Data & Generating Tactical Report..."):
+                            completion = g_client.chat.completions.create(
+                                model="llama-3.3-70b-versatile",
+                                messages=[
+                                    {"role": "system", "content": system_prompt},
+                                    {"role": "user", "content": f"DATA:\n{context_str}"}
+                                ],
+                                stream=True
+                            )
+                            
+                            def parse_stream(stream):
+                                for chunk in stream:
+                                    if chunk.choices:
+                                        delta = chunk.choices[0].delta
+                                        if delta.content:
+                                            yield delta.content
+                                            
+                            st.write_stream(parse_stream(completion))
+                            
+                    except Exception as e:
+                        st.error(f"AI Analysis Failed: {e}")
+            else:
+                 st.info("ℹ️ Install 'groq' to enable AI multimodal correlation.")
 
 with tab3:
     st.header("📻 Audio Logs (Radio Transcripts)")

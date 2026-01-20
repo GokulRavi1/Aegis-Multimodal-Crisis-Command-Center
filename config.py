@@ -10,6 +10,13 @@ load_dotenv()
 QDRANT_URL = os.getenv("QDRANT_URL")
 QDRANT_API_KEY = os.getenv("QDRANT_API_KEY")
 
+# Supported Disaster Categories for Detection
+DISASTER_CLASSES = [
+    "fire", "flood", "cyclone", "earthquake", "landslide", 
+    "tornado", "tsunami", "drought", "volcano", 
+    "explosion", "medical emergency", "person", "car"
+]
+
 if not QDRANT_URL:
     print("⚠️  WARNING: QDRANT_URL not set in .env. Defaulting to localhost.")
     QDRANT_URL = "http://localhost:6333"
