@@ -11,3 +11,5 @@ ultralytics
 groq
 groq
 python-dotenv
+easyocr
+geopy

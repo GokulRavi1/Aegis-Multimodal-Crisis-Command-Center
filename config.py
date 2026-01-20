@@ -11,10 +11,39 @@ QDRANT_URL = os.getenv("QDRANT_URL")
 QDRANT_API_KEY = os.getenv("QDRANT_API_KEY")
 
 # Supported Disaster Categories for Detection
+# Supported Disaster Categories for Detection
 DISASTER_CLASSES = [
-    "fire", "flood", "cyclone", "earthquake", "landslide", 
-    "tornado", "tsunami", "drought", "volcano", 
-    "explosion", "medical emergency", "person", "car"
+    # Geological
+    "earthquake", "volcanic eruption", "tsunami", "landslide", "avalanche", 
+    "sinkhole", "volcano", "lava",
+    
+    # Hydrological
+    "flood", "flash flood", "storm surge", "mudflow", "debris flow", 
+    "flooded street", "river overflow", "submerged car",
+    
+    # Meteorological
+    "cyclone", "hurricane", "typhoon", "tornado", "thunderstorm", 
+    "hailstorm", "blizzard", "ice storm", "heat wave", "cold wave", 
+    "heavy rain", "strong wind",
+    
+    # Climatological
+    "drought", "wildfire", "forest fire", "bushfire", "desertification", 
+    "dry land", "parched earth", "smoke", "flames", "burning building",
+    
+    # Biological
+    "epidemic", "pandemic", "insect infestation", "locust swarm", 
+    "animal disease outbreak",
+    
+    # Extra-terrestrial
+    "meteorite impact", "solar flare", "space weather storm",
+    
+    # Environmental / Atmospheric
+    "dust storm", "sandstorm", "fog", "smog", "air pollution",
+    
+    # Human/Urban Context
+    "explosion", "bomb blast", "fireball", "shattered glass", "collapsed building", "rubble",
+    "medical emergency", "ambulance", "stretcher", "injured person",
+    "person", "crowd", "car", "truck", "police car", "firetruck", "traffic jam"
 ]
 
 if not QDRANT_URL:

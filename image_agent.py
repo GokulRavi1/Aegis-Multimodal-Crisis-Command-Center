@@ -5,11 +5,18 @@ import os
 from PIL import Image
 from qdrant_client import QdrantClient
 from qdrant_client.http import models
-from fastembed import ImageEmbedding
+from fastembed import ImageEmbedding, TextEmbedding
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 from ultralytics import YOLOWorld
+import easyocr
+from geopy.geocoders import Nominatim
+import os
+from groq import Groq
+from dotenv import load_dotenv
 from config import get_qdrant_client, ensure_collection, DISASTER_CLASSES
+
+load_dotenv()
 
 # Configuration
 IMAGE_INBOX = "image_inbox"
@@ -18,16 +25,89 @@ MODEL_NAME = "yolov8s-worldv2.pt"
 
 class ImageHandler(FileSystemEventHandler):
     # ... (init unchanged) ...
-    def __init__(self, client, embed_model, yolo_model):
+    def __init__(self, client, embed_model, yolo_model, text_model):
         self.client = client
         self.embed_model = embed_model
         self.yolo_model = yolo_model
+        
+        # Pre-compute text embeddings for Hybrid Detection
+        print("🧠 Pre-computing disaster class embeddings for Hybrid Detection...")
+        self.labels = DISASTER_CLASSES
+        self.label_embeddings = list(text_model.embed(self.labels))
+        print("✅ Hybrid Memory Ready.")
+        
+        # Initialize OCR and Geocoder
+        print("🧠 Loading OCR Model (English)...")
+        self.reader = easyocr.Reader(['en'], gpu=False) # Set gpu=True if CUDA available
+        self.geolocator = Nominatim(user_agent="aegis_crisis_center")
+        print("✅ OCR & Geolocation Ready.")
+        
+        # Initialize LLM for smart location extraction
+        self.groq_key = os.getenv("GROQ_API_KEY")
+        if self.groq_key:
+            self.llm_client = Groq(api_key=self.groq_key)
+            print("✅ LLM (Groq) Ready for smart location extraction.")
+        else:
+            self.llm_client = None
+            print("⚠️ LLM not available. Using basic location extraction.")
+
+    def extract_location_with_llm(self, ocr_text):
+        """Use LLM to extract location/place names from OCR text."""
+        if not self.llm_client or not ocr_text:
+            return None
+        
+        try:
+            prompt = f"""Extract ONLY the geographic location (city, state, country, or region name) from this text. 
+            Return ONLY the location name, nothing else. If no location found, return 'NONE'.
+            
+            Text: "{ocr_text}"
+            
+            Location:"""
+            
+            completion = self.llm_client.chat.completions.create(
+                model="llama-3.3-70b-versatile",
+                messages=[{"role": "user", "content": prompt}],
+                temperature=0.1,
+                max_tokens=50
+            )
+            
+            location = completion.choices[0].message.content.strip()
+            
+            if location and location.upper() != "NONE":
+                print(f"   🤖 LLM Extracted Location: {location}")
+                return location
+            return None
+        except Exception as e:
+            print(f"   ⚠️ LLM Error: {e}")
+            return None
 
     def on_created(self, event):
         # ... logic unchanged ...
         if not event.is_directory and event.src_path.lower().endswith(('.jpg', '.jpeg', '.png', '.bmp')):
             print(f"🖼️ New image detected: {event.src_path}")
             self.process_image(event.src_path)
+
+    def wait_for_file_ready(self, file_path, timeout=5, stability_duration=1.0):
+        """Waits until the file size assumes a stable value."""
+        start_time = time.time()
+        last_size = -1
+        last_check = time.time()
+        
+        while time.time() - start_time < timeout:
+            if not os.path.exists(file_path):
+                time.sleep(0.1)
+                continue
+                
+            current_size = os.path.getsize(file_path)
+            if current_size == last_size and current_size > 0:
+                if time.time() - last_check > stability_duration:
+                    return True
+            else:
+                last_size = current_size
+                last_check = time.time()
+            
+            time.sleep(0.5)
+        return False
 
     def process_image(self, image_path):
         # ... (read frame logic unchanged) ...
@@ -77,13 +157,76 @@ class ImageHandler(FileSystemEventHandler):
                     primary_disaster = name
 
         if detections:
-            print(f"   Found: {detections} (Primary: {primary_disaster}, Conf: {max_conf:.2f})")
-
+            print(f"   Found (YOLO): {detections} (Primary: {primary_disaster})")
+            
         # Embedding
         frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         pil_image = Image.fromarray(frame_rgb)
         embeddings = list(self.embed_model.embed([pil_image]))
         vector = embeddings[0]
+
+        # --- HYBRID DETECTION (CLIP FALLBACK) ---
+        # If YOLO found nothing significant, ask CLIP what it sees.
+        detection_source = "YOLO"
+        if primary_disaster in ["None", "person", "car"]:
+            # Compute Cosine Similarity between Image and all Labels
+            scores = []
+            for i, label_emb in enumerate(self.label_embeddings):
+                # Cosine Sim: (A . B) / (|A| * |B|) - FastEmbed returns normalized vectors, so just Dot Product
+                score = sum(v * l for v, l in zip(vector, label_emb))
+                scores.append((self.labels[i], score))
+            
+            # Sort by score
+            scores.sort(key=lambda x: x[1], reverse=True)
+            top_label, top_score = scores[0]
+            
+            # Threshold Check (e.g., 0.22 is a reasonable starting point for CLIP/BGE matches)
+            if top_score > 0.22 and top_label not in ["person", "car", "truck"]:
+                primary_disaster = top_label
+                max_conf = float(top_score)
+                detection_source = "CLIP (Hybrid)"
+                print(f"   🧠 Hybrid Correction: Reclassified as '{primary_disaster}' (Score: {top_score:.2f})")
+        
+        # --- OCR & GEOLOCATION ---
+        ocr_text = ""
+        detected_location = None
+        
+        try:
+            # Simple OCR
+            results = self.reader.readtext(frame, detail=0)
+            ocr_text = " ".join(results)
+            
+            if ocr_text:
+                print(f"   📝 OCR Extracted: {ocr_text}")
+                
+            # SMART LOCATION EXTRACTION
+            # Step 1: Try LLM to extract location intelligently
+            location_name = self.extract_location_with_llm(ocr_text)
+            
+            # Step 2: Fallback to basic text cleaning if LLM fails
+            if not location_name and len(ocr_text) > 3:
+                # Basic cleaning for common patterns
+                clean_text = ocr_text.replace("BREAKING NEWS", "").replace("MAJOR", "").replace("FLOODING", "").replace("IN", "").strip()
+                if "," in clean_text:
+                    parts = clean_text.split(",")
+                    location_name = parts[0] + ", " + parts[1]
+                else:
+                    location_name = clean_text
+                
+            # Step 3: Geocode the extracted location
+            if location_name:
+                location = self.geolocator.geocode(location_name)
+                if location:
+                    detected_location = {"lat": location.latitude, "lon": location.longitude, "name": location.address}
+                    print(f"   📍 Geotagged: {location.address}")
+                else:
+                    print(f"   ⚠️ Could not geocode: {location_name}")
+        except Exception as e:
+            print(f"   ⚠️ OCR/Geo Error: {e}")
+            
+        # -------------------------
+        
+        # ----------------------------------------
 
         # Trigger Alerts logic
         alerts = []
@@ -91,17 +234,22 @@ class ImageHandler(FileSystemEventHandler):
             alerts.append(f"DETECTED {primary_disaster.upper()}")
             if max_conf > 0.6:
                 alerts.append("High Confidence Alert")
+        
+        if detected_location:
+            alerts.append(f"BREAKING NEWS: {primary_disaster.upper()} IN {detected_location['name'].upper()}")
 
         # Upsert (Note: Type is 'image')
         payload = {
             "source": os.path.basename(image_path),
             "type": "image",
             "detected_disaster": primary_disaster,
-            "confidence": {"visual": float(max_conf)},
+            "detected_disaster": primary_disaster,
+            "confidence": {"visual": float(max_conf), "source": detection_source},
             "timestamp": datetime.datetime.now(datetime.timezone.utc).isoformat(),
             "detections": detections,
             "triggered_alerts": alerts,
-            "location": {"lat": 28.7041, "lon": 77.1025}
+            "ocr_text": ocr_text,
+            "location": detected_location if detected_location else {"lat": 28.7041, "lon": 77.1025}
         }
         
         self.client.upsert(
@@ -126,15 +274,25 @@ def main():
     
     print("⏳ Loading Models for Image Agent...")
     embed_model = ImageEmbedding(model_name="Qdrant/clip-ViT-B-32-vision")
+    # Using CLIP text model to match the vision model space
+    text_model = TextEmbedding(model_name="Qdrant/clip-ViT-B-32-text")
+    
     yolo_model = YOLOWorld(MODEL_NAME)
     yolo_model.set_classes(DISASTER_CLASSES)
     
     observer = Observer()
-    handler = ImageHandler(client, embed_model, yolo_model)
+    handler = ImageHandler(client, embed_model, yolo_model, text_model)
     observer.schedule(handler, IMAGE_INBOX, recursive=False)
     observer.start()
     
     print(f"👀 Image Agent active. Monitoring '{IMAGE_INBOX}'...")
+
+    # Process existing files on startup
+    print("🔄 Checking for existing images...")
+    for filename in os.listdir(IMAGE_INBOX):
+        if filename.lower().endswith(('.jpg', '.jpeg', '.png', '.bmp')):
+            file_path = os.path.join(IMAGE_INBOX, filename)
+            handler.process_image(file_path)
     
     try:
         while True:
