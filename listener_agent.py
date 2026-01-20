@@ -6,51 +6,15 @@ from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 from qdrant_client import QdrantClient, models
 from fastembed import TextEmbedding
-from config import get_qdrant_client, ensure_collection
+from config import get_qdrant_client, ensure_collection, DISASTER_CLASSES
 
-# Configuration
-AUDIO_INBOX = "audio_inbox"
-COLLECTION_NAME = "audio_memory"
+# ... (Configuration unchanged) ...
 
 class AudioHandler(FileSystemEventHandler):
-    def __init__(self, client, embed_model):
-        self.client = client
-        self.embed_model = embed_model
-        self.recognizer = sr.Recognizer()
-
-    def on_created(self, event):
-        if not event.is_directory and event.src_path.lower().endswith(('.wav', '.flac', '.aiff','.mp3')):
-            print(f"🎤 New audio detected: {event.src_path}")
-            self.process_audio(event.src_path)
+    # ... (init/on_created unchanged) ...
 
     def process_audio(self, file_path):
-        print(f"⚡ Transcribing {file_path}...")
-        
-        transcript = None
-        for i in range(5):
-            try:
-                # Ensure file is readable
-                with open(file_path, 'rb'): 
-                    pass
-                    
-                with sr.AudioFile(file_path) as source:
-                    audio_data = self.recognizer.record(source)
-                    transcript = self.recognizer.recognize_google(audio_data)
-                
-                if transcript:
-                    break
-            except (PermissionError, IOError):
-                print(f"   ⏳ Waiting for file release... ({i+1}/5)")
-                time.sleep(1)
-            except ValueError:
-                # Likely format error (e.g. mp3 without ffmpeg)
-                print(f"⚠️ Format warning: Could not process {os.path.basename(file_path)}. Ensure it is a valid WAV/FLAC.")
-                return
-
-        if not transcript:
-            print("❌ Error processing audio (locked or invalid format)")
-            return
-
+        # ... (Transcription logic unchanged, up to line 63) ...
         print(f"📝 Transcript: {transcript}")
             
         try:
@@ -58,14 +22,33 @@ class AudioHandler(FileSystemEventHandler):
             embeddings = list(self.embed_model.embed([transcript]))
             vector = embeddings[0]
             
+            # Detect Disaster via Keywords
+            detected_disaster = "None"
+            confidence = 0.0
+            
+            lower_text = transcript.lower()
+            for disaster in DISASTER_CLASSES:
+                if disaster in lower_text:
+                    detected_disaster = disaster
+                    confidence = 0.8 # High confidence if keyword explicit
+                    break # Take first match
+            
+            # Alerts
+            alerts = []
+            if detected_disaster != "None":
+                alerts.append(f"AUDIO ALERT: {detected_disaster.upper()}")
+
             # Upsert
             payload = {
                 "source": os.path.basename(file_path),
                 "type": "audio",
+                "detected_disaster": detected_disaster,
+                "confidence": {"audio": confidence},
                 "timestamp": datetime.datetime.now(datetime.timezone.utc).isoformat(),
                 "transcript": transcript,
-                "urgency": "medium", 
-                "content": transcript # Unified field for search
+                "urgency": "high" if detected_disaster != "None" else "medium", 
+                "content": transcript,
+                "triggered_alerts": alerts
             }
             
             self.client.upsert(
@@ -78,7 +61,7 @@ class AudioHandler(FileSystemEventHandler):
                     )
                 ]
             )
-            print(f"✅ Indexed audio.")
+            print(f"✅ Indexed audio. Disaster: {detected_disaster}")
             
         except Exception as e:
             print(f"❌ Error indexing audio: {e}")

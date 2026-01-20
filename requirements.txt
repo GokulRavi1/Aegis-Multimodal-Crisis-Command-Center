@@ -8,4 +8,6 @@ SpeechRecognition
 pydub
 Pillow
 ultralytics
+groq
+groq
 python-dotenv

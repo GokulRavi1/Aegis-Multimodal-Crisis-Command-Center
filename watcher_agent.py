@@ -9,21 +9,22 @@ from fastembed import ImageEmbedding
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 from ultralytics import YOLOWorld
-from config import get_qdrant_client, ensure_collection
+from config import get_qdrant_client, ensure_collection, DISASTER_CLASSES
 
 # Configuration
 VIDEO_INBOX = "video_inbox"
 COLLECTION_NAME = "visual_memory"
 MODEL_NAME = "yolov8s-worldv2.pt"
-CUSTOM_CLASSES = ["person", "car", "flood", "cyclone", "hurricane"]
 
 class VideoHandler(FileSystemEventHandler):
+    # ... (init unchanged) ...
     def __init__(self, client, embed_model, yolo_model):
         self.client = client
         self.embed_model = embed_model
         self.yolo_model = yolo_model
 
     def on_created(self, event):
+        # ... logic unchanged ...
         if not event.is_directory and event.src_path.lower().endswith(('.mp4', '.avi', '.mov', '.mkv')):
             print(f"🎬 New video detected: {event.src_path}")
             self.process_video(event.src_path)
@@ -50,14 +51,26 @@ class VideoHandler(FileSystemEventHandler):
             result = results[0]
             
             detections = {}
-            if result.boxes:
-                for cls_id in result.boxes.cls:
-                    name = self.yolo_model.names[int(cls_id)]
-                    detections[name] = detections.get(name, 0) + 1
+            max_conf = 0.0
+            primary_disaster = "None"
             
-            if detections:
-                print(f"   Frame {frame_count}: Found {detections}")
-
+            if result.boxes:
+                for box in result.boxes:
+                    cls_id = int(box.cls[0])
+                    conf = float(box.conf[0])
+                    name = self.yolo_model.names[cls_id]
+                    
+                    detections[name] = detections.get(name, 0) + 1
+                    
+                    # Update primary disaster
+                    if name not in ["person", "car"]:
+                        if conf > max_conf:
+                            max_conf = conf
+                            primary_disaster = name
+                    elif primary_disaster == "None" and conf > max_conf:
+                        max_conf = conf
+                        primary_disaster = name
+            
             # Save Latest Frame
             annotated_frame = result.plot()
             cv2.imwrite("latest_frame.jpg", annotated_frame)
@@ -68,11 +81,19 @@ class VideoHandler(FileSystemEventHandler):
             embeddings = list(self.embed_model.embed([pil_image]))
             vector = embeddings[0]
 
+            # Alerts
+            alerts = []
+            if primary_disaster not in ["None", "person", "car"]:
+                alerts.append(f"DETECTED {primary_disaster.upper()}")
+
             payload = {
                 "source": os.path.basename(video_path),
                 "type": "visual",
+                "detected_disaster": primary_disaster,
+                "confidence": {"visual": float(max_conf)},
                 "timestamp": datetime.datetime.now(datetime.timezone.utc).isoformat(),
                 "detections": detections,
+                "triggered_alerts": alerts,
                 "location": {"lat": 28.7041, "lon": 77.1025}
             }
             
@@ -103,7 +124,7 @@ def main():
     print("⏳ Loading Models for Watcher Agent...")
     embed_model = ImageEmbedding(model_name="Qdrant/clip-ViT-B-32-vision")
     yolo_model = YOLOWorld(MODEL_NAME)
-    yolo_model.set_classes(CUSTOM_CLASSES)
+    yolo_model.set_classes(DISASTER_CLASSES)
     
     observer = Observer()
     handler = VideoHandler(client, embed_model, yolo_model)
