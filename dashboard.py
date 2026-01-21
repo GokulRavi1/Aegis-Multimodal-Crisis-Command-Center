@@ -114,57 +114,68 @@ def generate_alert_text(payload, data_type):
 try:
     all_alerts = []
     
-    # Fetch from Visual Memory
+    # 1. High-Priority Analyst Alerts (from alerts.json)
+    if os.path.exists(ALERT_FILE):
+        try:
+            with open(ALERT_FILE, "r") as f:
+                analyst_alerts = json.load(f)
+                for a in analyst_alerts[:10]:
+                    all_alerts.append({
+                        "timestamp": a.get("timestamp", ""),
+                        "type": "🛡️ ANALYST",
+                        "msg": a.get("msg", ""),
+                        "payload": a,
+                        "data_type": "analyst"
+                    })
+        except: pass
+
+    # 2. Raw Ingestion Feed (Fallbacks from Qdrant)
+    # Fetch more and sort by timestamp to get 'newest'
     if client.collection_exists(VISUAL_COLLECTION):
-        vis_res = client.scroll(collection_name=VISUAL_COLLECTION, limit=10, with_payload=True)[0]
+        vis_res = client.scroll(collection_name=VISUAL_COLLECTION, limit=50, with_payload=True)[0]
         for p in vis_res:
             if p.payload.get("detected_disaster") not in ["None", "person", "car"]:
                 all_alerts.append({
                     "timestamp": p.payload.get("timestamp", ""),
-                    "type": "🖼️ IMAGE/VIDEO",
+                    "type": "🖼️ RAW VISUAL",
                     "payload": p.payload,
                     "data_type": "visual"
                 })
     
-    # Fetch from Audio Memory
     if client.collection_exists(AUDIO_COLLECTION):
-        aud_res = client.scroll(collection_name=AUDIO_COLLECTION, limit=5, with_payload=True)[0]
+        aud_res = client.scroll(collection_name=AUDIO_COLLECTION, limit=30, with_payload=True)[0]
         for p in aud_res:
             if p.payload.get("detected_disaster") not in ["None"]:
                 all_alerts.append({
                     "timestamp": p.payload.get("timestamp", ""),
-                    "type": "🎙️ AUDIO",
+                    "type": "🎙️ RAW AUDIO",
                     "payload": p.payload,
                     "data_type": "audio"
-                })
-    
-    # Fetch from Tactical Memory
-    if client.collection_exists(TACTICAL_COLLECTION):
-        tac_res = client.scroll(collection_name=TACTICAL_COLLECTION, limit=5, with_payload=True)[0]
-        for p in tac_res:
-            if p.payload.get("detected_disaster") not in ["None"]:
-                all_alerts.append({
-                    "timestamp": p.payload.get("timestamp", ""),
-                    "type": "📄 TEXT",
-                    "payload": p.payload,
-                    "data_type": "text"
                 })
     
     # Sort by timestamp (newest first)
     all_alerts.sort(key=lambda x: x.get("timestamp", ""), reverse=True)
     
     if all_alerts:
-        for alert in all_alerts[:8]:  # Show top 8
-            ts = alert["timestamp"][:19].replace("T", " ") if alert["timestamp"] else "Unknown Time"
-            alert_text = generate_alert_text(alert["payload"], alert["data_type"])
+        for alert in all_alerts[:15]:  # Show top 15
+            ts = alert["timestamp"][:19].replace("T", " ") if alert["timestamp"] else "Just now"
             
-            # Location info
+            if alert["data_type"] == "analyst":
+                alert_text = alert["msg"]
+            else:
+                alert_text = generate_alert_text(alert["payload"], alert["data_type"])
+            
+            # Location info - only show if we have a real name
             loc = alert["payload"].get("location", {})
-            loc_name = loc.get("name", "")[:40] if isinstance(loc, dict) else ""
+            loc_name = ""
+            if isinstance(loc, dict):
+                loc_name = loc.get("name", "")
+                # Skip generic fallback names
+                if loc_name in ["Global Monitoring Area", "Unknown Location", ""]:
+                    loc_name = ""
             
-            st.sidebar.error(f"**{alert['type']}** | {ts}\n\n{alert_text}")
-            if loc_name:
-                st.sidebar.caption(f"📍 {loc_name}")
+            location_str = f"\n\n📍 **Location:** {loc_name}" if loc_name else ""
+            st.sidebar.error(f"**{alert['type']}** | {ts}\n\n{alert_text}{location_str}")
     else:
         st.sidebar.info("No active alerts. System monitoring...")
         
@@ -178,70 +189,105 @@ def get_rag_response(query):
         return "⚠️ Error: Groq API Key not found. Please check your .env configuration.", []
 
     try:
+        # Import retrieval logger
+        try:
+            from retrieval_logger import get_retrieval_logger, format_evidence_for_llm, create_grounded_prompt
+            logger = get_retrieval_logger()
+        except:
+            logger = None
+        
         # 1. Embed Query
         text_q = list(text_model.embed([query]))[0]
         visual_q = list(clip_text_model.embed([query]))[0]
         
         results = []
-        score_threshold = 0.20
+        score_threshold = 0.70  # Increased for higher quality
 
         # Search Visual
         if client.collection_exists(VISUAL_COLLECTION):
-            vis_res = client.query_points(collection_name=VISUAL_COLLECTION, query=visual_q.tolist(), limit=3, with_payload=True)
+            vis_res = client.query_points(collection_name=VISUAL_COLLECTION, query=visual_q.tolist(), limit=5, with_payload=True)
             for hit in vis_res.points:
                 if hit.score > score_threshold:
                     results.append({"type": "visual", "score": hit.score, "payload": hit.payload, "id": hit.id})
 
         # Search Audio
         if client.collection_exists(AUDIO_COLLECTION):
-            aud_res = client.query_points(collection_name=AUDIO_COLLECTION, query=text_q.tolist(), limit=3, with_payload=True)
+            aud_res = client.query_points(collection_name=AUDIO_COLLECTION, query=text_q.tolist(), limit=5, with_payload=True)
             for hit in aud_res.points:
                 if hit.score > score_threshold:
                     results.append({"type": "audio", "score": hit.score, "payload": hit.payload, "id": hit.id})
 
         # Search Tactical
         if client.collection_exists(TACTICAL_COLLECTION):
-            tac_res = client.query_points(collection_name=TACTICAL_COLLECTION, query=text_q.tolist(), limit=3, with_payload=True)
+            tac_res = client.query_points(collection_name=TACTICAL_COLLECTION, query=text_q.tolist(), limit=5, with_payload=True)
             for hit in tac_res.points:
                 if hit.score > score_threshold:
                     results.append({"type": "text", "score": hit.score, "payload": hit.payload, "id": hit.id})
 
-        # Sort
+        # Sort and limit to top-k
         results.sort(key=lambda x: x['score'], reverse=True)
         top_results = results[:5]
 
-        # Generate Summary
-        g_client = Groq(api_key=groq_key)
+        # Format evidence for logging
+        retrieved_points = [
+            {
+                "id": r["id"],
+                "score": round(r["score"], 3),
+                "source": r["payload"].get("source", "Unknown"),
+                "disaster_type": r["payload"].get("detected_disaster", "Unknown"),
+                "content_preview": (r["payload"].get("ocr_text", "") or r["payload"].get("transcript", "") or r["payload"].get("content", ""))[:100]
+            }
+            for r in top_results
+        ]
+
+        # Generate context with citations
         context_str = ""
-        for r in top_results:
+        for i, r in enumerate(top_results, 1):
             p = r['payload']
+            src = p.get('source', 'Unknown')
             if r['type'] == 'visual':
-                context_str += f"[VIDEO/IMAGE] Time: {p.get('timestamp')}, Detect: {p.get('detected_disaster')}, Text: {p.get('ocr_text', '')}\n"
+                context_str += f"[Evidence {i}: {src}] Type: VIDEO/IMAGE | Disaster: {p.get('detected_disaster')} | Text: {p.get('ocr_text', 'N/A')[:100]}\n"
             elif r['type'] == 'audio':
-                context_str += f"[AUDIO] Time: {p.get('timestamp')}, Unit: {p.get('unit_id')}, Trans: {p.get('transcript')}\n"
+                context_str += f"[Evidence {i}: {src}] Type: AUDIO | Transcript: {p.get('transcript', 'N/A')[:100]}\n"
             else:
-                context_str += f"[TEXT] Time: {p.get('timestamp')}, Content: {p.get('content')}\n"
+                context_str += f"[Evidence {i}: {src}] Type: TEXT | Content: {p.get('content', 'N/A')[:100]}\n"
 
         if not context_str:
             return "No recent data found matching your query.", []
 
-        sys_prompt = """You are the Aegis Analyst Agent (System Core). 
+        # Grounded system prompt with citation requirements
+        sys_prompt = """You are the Aegis Analyst Agent. 
+
+CRITICAL RULES:
+1. ONLY use facts from the provided Evidence.
+2. CITE sources by mentioning filenames (e.g., "Based on [filename.png]...").
+3. If evidence conflicts, trust VISUAL > AUDIO > TEXT.
+4. Provide a 20-30 word tactical summary.
+5. DO NOT invent or hallucinate information."""
+
+        g_client = Groq(api_key=groq_key)
+        full_prompt = f"QUERY: {query}\n\n=== EVIDENCE ===\n{context_str}\n\n=== ANALYSIS (cite sources) ==="
         
-        Your Mission:
-        1. **Reasoning**: Correlate Video, Audio, and Text evidence to verify the situation.
-        2. **Conflict Resolution**: If Audio says "Safe" but Video shows "Fire", trust the Visual evidence and flag the conflict.
-        3. **Tactical Summary**: Provide a 20-30 word actionable sitrep.
-        
-        Style: Military/Emergency Command. Direct. No fluff."""
         completion = g_client.chat.completions.create(
             model="llama-3.3-70b-versatile",
             messages=[
                 {"role": "system", "content": sys_prompt},
-                {"role": "user", "content": f"QUERY: {query}\n\nCTX:\n{context_str}"}
+                {"role": "user", "content": full_prompt}
             ],
-            temperature=0.3, max_tokens=100
+            temperature=0.3, max_tokens=150
         )
-        return completion.choices[0].message.content, top_results
+        response_text = completion.choices[0].message.content
+        
+        # Log retrieval provenance
+        if logger:
+            logger.log_retrieval(
+                query=query,
+                retrieved_points=retrieved_points,
+                llm_prompt=full_prompt,
+                llm_response=response_text
+            )
+        
+        return response_text, top_results
 
     except Exception as e:
         return f"⚠️ System Error: {str(e)}", []
@@ -409,6 +455,9 @@ with tab2:
     st.header("🔍 Semantic Search")
     query = st.text_input("Search the Warzone", placeholder="e.g., 'Bengaluru flood warning'")
     
+    # CLIP (Visual) scores are often lower (0.25-0.45) while BGE (Text/Audio) are higher (0.60-0.85)
+    search_threshold = 0.70
+    
     def generate_warning_summary(payload, data_type):
         """Generate 10-20 word warning from LLM."""
         groq_key = os.getenv("GROQ_API_KEY")
@@ -471,7 +520,7 @@ with tab2:
         if client.collection_exists(VISUAL_COLLECTION):
             vis_res = client.query_points(collection_name=VISUAL_COLLECTION, query=visual_q.tolist(), limit=10, with_payload=True)
             for hit in vis_res.points:
-                if hit.score > 0.60 and matches_query_keywords(hit.payload):
+                if hit.score > search_threshold and matches_query_keywords(hit.payload):
                     all_results.append({"type": "🖼️ VISUAL", "hit": hit, "data_type": "visual", "score": hit.score})
         
         # Search Audio Memory (Text embeddings)
@@ -479,14 +528,14 @@ with tab2:
         if client.collection_exists(AUDIO_COLLECTION):
             aud_res = client.query_points(collection_name=AUDIO_COLLECTION, query=text_q.tolist(), limit=10, with_payload=True)
             for hit in aud_res.points:
-                if hit.score > 0.60 and matches_query_keywords(hit.payload):
+                if hit.score > search_threshold and matches_query_keywords(hit.payload):
                     all_results.append({"type": "🎙️ AUDIO", "hit": hit, "data_type": "audio", "score": hit.score})
         
         # Search Tactical/Text Memory (Text embeddings)
         if client.collection_exists(TACTICAL_COLLECTION):
             tac_res = client.query_points(collection_name=TACTICAL_COLLECTION, query=text_q.tolist(), limit=10, with_payload=True)
             for hit in tac_res.points:
-                if hit.score > 0.60 and matches_query_keywords(hit.payload):
+                if hit.score > search_threshold and matches_query_keywords(hit.payload):
                     all_results.append({"type": "📄 TEXT", "hit": hit, "data_type": "text", "score": hit.score})
         
         # Sort by score

@@ -1,0 +1,40 @@
+[
+  {
+    "id": "log_1768919422706",
+    "timestamp": "2026-01-20T14:30:22.706135+00:00",
+    "query": "Bengaluru flood",
+    "session_id": null,
+    "retrieved_points": [
+      {
+        "id": 1768914228981,
+        "score": 0.814,
+        "source": "Bengaluru has increasingly faced ur.txt",
+        "disaster_type": "flood",
+        "content_preview": "Bengaluru has increasingly faced urban flooding due to intense rainfall, rapid urbanization, and the"
+      },
+      {
+        "id": 1768913353636,
+        "score": 0.648,
+        "source": "NoteGPT_Speech_1768910627236.wav",
+        "disaster_type": "flood",
+        "content_preview": "flash floods in Chennai often strike with little warning particularly in low lying neighbourhood suc"
+      }
+    ],
+    "retrieval_count": 2,
+    "llm_model": "llama-3.3-70b-versatile",
+    "llm_prompt_length": 425,
+    "llm_response": "Based on [ur.txt], Bengaluru faces urban flooding due to intense rainfall and rapid urbanization. \nTactical summary: Bengaluru vulnerable to urban flooding.",
+    "citations": [
+      {
+        "point_id": 1768914228981,
+        "source": "Bengaluru has increasingly faced ur.txt",
+        "score": 0.814
+      },
+      {
+        "point_id": 1768913353636,
+        "source": "NoteGPT_Speech_1768910627236.wav",
+        "score": 0.648
+      }
+    ]
+  }
+]

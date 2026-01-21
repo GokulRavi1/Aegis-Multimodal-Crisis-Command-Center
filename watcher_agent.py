@@ -52,27 +52,33 @@ class VideoHandler(FileSystemEventHandler):
 
     def extract_location_with_llm(self, text):
         """Use LLM to extract location from text."""
-        if not self.llm_client or not text:
+        if not self.llm_client or not text or len(text) < 10:
             return None
         
         try:
-            prompt = f"""Extract ONLY the geographic location (city, state, country, or region name) from this text. 
-            Return ONLY the location name, nothing else. If no location found, return 'NONE'.
+            prompt = f"""Extract the geographic location (City, State, or Country) from this OCR text.
+            CRITICAL RULES:
+            1. ONLY return if it is a CLEAR City, State, or Country name (e.g., Chennai, Kerala, India).
+            2. REJECT noise words: "Ila", "Indian", "The", "Express", "EXPRES", "Usually", etc.
+            3. REJECT single words that are not real place names.
+            4. If unsure or no clear location found, return "NONE".
             
-            Text: "{text}"
+            Text: "{text[:200]}"
             
-            Location:"""
+            Location (or NONE):"""
             
             completion = self.llm_client.chat.completions.create(
                 model="llama-3.3-70b-versatile",
                 messages=[{"role": "user", "content": prompt}],
-                temperature=0.1,
-                max_tokens=50
+                temperature=0.0,
+                max_tokens=30
             )
             
             location = completion.choices[0].message.content.strip()
             
-            if location and location.upper() != "NONE":
+            # Extra validation - reject common noise
+            noise_words = ["none", "ila", "indian", "india", "the", "express", "usually", "we", "for"]
+            if location and location.upper() != "NONE" and location.lower() not in noise_words:
                 print(f"   🤖 LLM Extracted Location: {location}")
                 return location
             return None
@@ -227,16 +233,25 @@ class VideoHandler(FileSystemEventHandler):
                 "location": detected_location if detected_location else {"lat": 28.7041, "lon": 77.1025}
             }
             
-            self.client.upsert(
-                collection_name=COLLECTION_NAME,
-                points=[
-                    models.PointStruct(
-                        id=int(time.time() * 1000),
-                        vector=vector.tolist(),
-                        payload=payload
+            # Upsert with retry logic for network timeouts
+            for attempt in range(3):
+                try:
+                    self.client.upsert(
+                        collection_name=COLLECTION_NAME,
+                        points=[
+                            models.PointStruct(
+                                id=int(time.time() * 1000),
+                                vector=vector.tolist(),
+                                payload=payload
+                            )
+                        ]
                     )
-                ]
-            )
+                    break
+                except Exception as e:
+                    if attempt < 2:
+                        time.sleep(1 * (attempt + 1))  # Backoff: 1s, 2s
+                    else:
+                        print(f"   ⚠️ Upsert failed after retries: {e}")
             
         cap.release()
         print(f"✅ Finished Video.")

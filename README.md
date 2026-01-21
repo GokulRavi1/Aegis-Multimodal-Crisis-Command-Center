@@ -1,95 +1,83 @@
 # 🛡️ Aegis – Multimodal Crisis Command Center
 
-**Aegis** is an AI-powered Situation Awareness system designed for crisis management. It fuses data from **Video, Image, Audio, and Text** sources into a unified vector database to provide real-time intelligence and semantic search capabilities.
+**Aegis** is an AI-powered Situation Awareness system designed for crisis management. It fuses data from **Video, Image, Audio, and Text** sources into a unified vector database to provide real-time intelligence, semantic search, and grounded analytical reasoning.
 
 ![System Architecture](system_architecture.png)
 
 ## 🚀 Features
 
 ### 1. Multimodal Ingestion Agents
-*   **🎥 Watcher Agent (`watcher_agent.py`)**: Monitors video feeds (drones/CCTV), detects hazards (YOLO-World), and indexes frames (CLIP) into Qdrant.
-*   **🖼️ Image Agent (`image_agent.py`)**: Processes static imagery from field operatives, detecting objects and embedding semantic content.
-*   **📻 Listener Agent (`listener_agent.py`)**: Transcribes radio/audio logs (SpeechRecognition) and embeds transcripts (BGE) for search.
-*   **📄 Text Agent (`text_agent.py`)**: Ingests social media, SITREPs, and logs, embedding them for tactical retrieval.
+*   **🎥 Watcher Agent (`watcher_agent.py`)**: Monitors video feeds via YOLO-World for hazard detection and CLIP for frame indexing.
+*   **🖼️ Image Agent (`image_agent.py`)**: Processes static imagery with OCR and geospatial tagging.
+*   **🎙️ Listener Agent (`listener_agent.py`)**: Transcribes radio/audio logs with automated MP3-to-WAV conversion and geocoding.
+*   **📄 Text Agent (`text_agent.py`)**: Ingests social media snippets and tactical SITREPs.
 
 ### 2. Intelligent Core
-*   **Vector Database**: **Qdrant Cloud** stores embeddings for high-speed similarity search.
-*   **AI Models**:
-    *   **Contextual Understanding**: `BAAI/bge-small-en-v1.5` (Text/Audio).
-    *   **Visual Understanding**: `Qdrant/clip-ViT-B-32-vision` (Video/Image).
-    *   **Object Detection**: `YOLO-World` (Real-time custom vocabulary detection).
+*   **Advanced Memory Manager (`memory_manager.py`)**: Centralized lifecycle for embeddings, including TTL-based eviction and confidence scoring.
+*   **Analyst Agent (RAG)**: An LLM-powered reasoning engine that provides evidence-grounded sitreps with explicit source citations.
+*   **Retrieval Provenance (`retrieval_logger.py`)**: Full traceability of every AI response, logging queries, retrieved evidence IDs, and confidence scores.
 
 ### 3. Command Dashboard
-*   **📍 Crisis Operational Map**: Real-time geospatial view of hazards and civilians.
-*   **🔍 Semantic Search**: Natural language search across ALL modalities (e.g., "show me collapsed bridges" finds video frames and radio logs).
-*   **Relevance Filtering**: Automatically filters low-confidence results to reduce noise.
+*   **📍 Crisis Operational Map**: Real-time visualization of hazards, civilians, and field data.
+*   **🔍 Semantic Search**: Multi-modal search with high-precision keyword filtering (e.g., "Bengaluru flood" correctly isolates local results).
+*   **💬 Safety AI Chat**: Interactive RAG analyst for querying the "Warzone Memory".
+
+---
+
+## 🏗️ Architecture & Memory Model
+
+- **Vector Database**: Qdrant Cloud (Managed)
+- **Embedding Models**: 
+  - `BAAI/bge-small-en-v1.5` (Text/Audio - 384d)
+  - `Qdrant/clip-ViT-B-32-text` (Visual - 512d)
+- **Reasoning Engine**: Groq (Llama-3.3-70B)
+- **Object Detection**: YOLO-World (Open-Vocabulary)
+
+For a deep dive into the system design, see [ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
 ---
 
 ## 🛠️ Setup & Installation
 
-### 1. Prerequisites
-*   Python 3.10+
-*   [Qdrant Cloud Account](https://cloud.qdrant.io/) (Free Tier is sufficient)
+See [SETUP.md](SETUP.md) for detailed environment configuration and execution instructions.
 
-### 2. Install Dependencies
+### Quick Start (Environment)
+1. Install requirements: `pip install -r requirements.txt`
+2. Configure `.env`:
+   ```ini
+   QDRANT_URL=https://your-cluster.qdrant.io
+   QDRANT_API_KEY=your-api-key
+   GROQ_API_KEY=your-groq-key
+   ```
+
+---
+
+## 🧪 Evaluation & Performance
+
+Aegis includes a built-in evaluation harness to measure system accuracy and responsiveness.
+
+**Run Benchmarks:**
 ```bash
-pip install -r requirements.txt
+python tests/benchmark.py
 ```
-
-### 3. Configuration
-Create a `.env` file in the root directory (copy from `.env.example` if available) and add your Qdrant Cloud credentials:
-
-```ini
-QDRANT_URL=https://your-cluster-url.qdrant.io:6333
-QDRANT_API_KEY=your-api-key
-```
-
-### 4. Running the System
-Open separate terminals for each agent to simulate parallel ingestion:
-
-**Terminal 1 (Visual Intelligence):**
-```bash
-python watcher_agent.py
-```
-*(Monitors `video_inbox/`)*
-
-**Terminal 2 (Image Intelligence):**
-```bash
-python image_agent.py
-```
-*(Monitors `image_inbox/`)*
-
-**Terminal 3 (Audio Intelligence):**
-```bash
-python listener_agent.py
-```
-*(Monitors `audio_inbox/`)*
-
-**Terminal 4 (Text Intelligence):**
-```bash
-python text_agent.py
-```
-*(Monitors `text_inbox/`)*
-
-**Terminal 5 (Dashboard):**
-```bash
-streamlit run dashboard.py
-```
+*   **Metrics tracked**: Precision@k, Recall@k, Latency (ms), and Throughput (QPS).
+*   **Provenance**: View `retrieval_logs.json` for detailed RAG audit trails.
 
 ---
 
 ## 📂 Project Structure
 
-*   `_inbox/` folders: Drop files here to simulate incoming data streams.
-*   `config.py`: Centralized configuration for cloud connections.
-*   `dashboard.py`: Streamlit-based user interface.
-*   `generate_civilians.py`: Utility to generate synthetic civilian location data.
+*   `docs/`: Detailed system documentation and reports.
+*   `tests/`: Evaluation benchmarks and test suites.
+*   `_inbox/`: Hot-folders for real-time data ingestion.
+*   `memory_manager.py`: Core memory lifecycle logic.
+*   `retrieval_logger.py`: RAG traceability and provenance.
 
 ## 🧠 AI Stack Rationale
 
-| Component | Model/Tool | Reason |
+| Component | Choice | Rationale |
 | :--- | :--- | :--- |
-| **Embeddings** | FastEmbed (BGE & CLIP) | Lightweight, fast CPU inference, no external API costs (runs locally). |
-| **Object Detection** | YOLO-World | "Open Vocabulary" detection allows searching for new hazards (e.g., "cyclone") without retraining. |
-| **Vector DB** | Qdrant | Efficient storage and retrieval of high-dimensional vectors with metadata filtering. |
+| **Embeddings** | FastEmbed | Low-latency local CPU inference. |
+| **Search** | Qdrant | Hybrid filtering (Vector + Metadata + Keywords). |
+| **Reasoning** | Groq/Llama | Ultra-fast inference for real-time tactical advice. |
+| **Geospatial** | Nominatim | Accurate city/state level coordinate extraction. |

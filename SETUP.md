@@ -1,26 +1,22 @@
 # Aegis – Setup Guide
 
-Complete step-by-step setup instructions for running Aegis locally.
+Complete step-by-step setup instructions for running Aegis with Qdrant Cloud and Groq LLM.
 
 ---
 
 ## Prerequisites
 
 ### 1. Install Python 3.10+
-Download from: https://www.python.org/downloads/
+Download from: [python.org](https://www.python.org/downloads/)
 
-Verify installation:
+Verify:
 ```bash
 python --version
 ```
 
-### 2. Install Docker Desktop
-Download from: https://www.docker.com/products/docker-desktop/
-
-After installation:
-1. Open Docker Desktop
-2. Wait for the engine to start (whale icon stops animating)
-3. Keep Docker Desktop running
+### 2. API Credentials
+*   **Qdrant Cloud**: Create a cluster and get your **URL** and **API Key** from [cloud.qdrant.io](https://cloud.qdrant.io/).
+*   **Groq Cloud**: Get your **API Key** from [console.groq.com](https://console.groq.com/) (required for Analyst Agent and Warning Summaries).
 
 ---
 
@@ -31,116 +27,83 @@ After installation:
 cd "c:\workspace\Aegis – Multimodal Crisis Command Center"
 ```
 
-### Step 2: Start Qdrant Vector Database
-```bash
-docker-compose up -d
-```
-
-**Expected Output:**
-```
-[+] Running 1/1
- ✔ Container aegismultimodalcrisiscommandcenter-qdrant-1  Started
-```
-
-**Verify:** Open http://localhost:6333/dashboard in browser.
-
-### Step 3: Install Python Dependencies
+### Step 2: Install Python Dependencies
 ```bash
 pip install -r requirements.txt
 ```
+> **Note**: On first run, the system will download embedding models (BGE and CLIP) which are ~600MB total.
 
-**Note:** First run will download embedding models (~400MB).
+### Step 3: Configure Environment
+Create a `.env` file in the root directory:
+```ini
+QDRANT_URL=https://your-cluster-url.qdrant.io
+QDRANT_API_KEY=your-api-key
+GROQ_API_KEY=your-groq-key
+```
 
 ---
 
 ## Running the System
 
-Execute these commands **in order**, each in a separate terminal:
+Execute these commands in order, each in a separate terminal:
 
-### Terminal 1: Generate Test Data
-```bash
-python create_test_video.py
-python generate_civilians.py
-```
+### Phase 1: Ingestion Agents
+Run all agents to start "listening" to their respective inboxes:
+*   **Terminal 1**: `python watcher_agent.py` (Video)
+*   **Terminal 2**: `python image_agent.py` (Images)
+*   **Terminal 3**: `python listener_agent.py` (Audio)
+*   **Terminal 4**: `python text_agent.py` (Text/Social)
 
-### Terminal 2: Run All Agents
-```bash
-python watcher_agent.py
-python listener_agent.py
-python text_agent.py
-```
+### Phase 2: Intelligence & Cleanup
+*   **Terminal 5**: `python analyst_agent.py` (Geospatial correlation & alert logging)
+*   **Terminal 6**: `python memory_manager.py` (Initializes collections and runs cleanup policies)
 
-### Terminal 3: Start Safety Monitor
-```bash
-python safety_agent.py
-```
-> This runs continuously. Press `Ctrl+C` to stop.
-
-### Terminal 4: Launch Dashboard
+### Phase 3: Launch Dashboard
+*   **Terminal 7**: 
 ```bash
 streamlit run dashboard.py
 ```
-
 **Dashboard URL:** http://localhost:8501
 
 ---
 
-## Verification Checklist
+## Verification & Testing
 
-| Check | How to Verify |
-|-------|---------------|
-| Qdrant Running | http://localhost:6333/dashboard shows UI |
-| Civilians Seeded | Dashboard shows green dots on map |
-| Video Processed | Dashboard shows red dots on map |
-| Alerts Generated | `alerts.json` file exists and has content |
-| Dashboard Works | All 4 tabs load without errors |
+### 1. Run Evaluation Benchmark
+Verify retrieval accuracy and system latency:
+```bash
+python tests/benchmark.py
+```
+Check `benchmark_results.json` for performance metrics.
+
+### 2. Verify RAG Traceability
+After performing a search or chat in the dashboard, check `retrieval_logs.json` to see the full evidence trail and citations.
+
+### 3. Seed Test Data
+To populate the map with simulated civilian data:
+```bash
+python generate_civilians.py
+```
 
 ---
 
 ## Troubleshooting
 
-### Docker not running
-**Error:** `open //./pipe/dockerDesktopLinuxEngine: The system cannot find the file specified`
+### `getaddrinfo failed`
+**Error**: `qdrant_client.http.exceptions.ResponseHandlingException: [Errno 11001]`
+**Fix**: This is usually a DNS or network issue reaching Qdrant Cloud. Check your internet connection or `.env` URL format.
 
-**Fix:** Start Docker Desktop and wait for it to fully initialize.
+### `ModuleNotFoundError: No module named 'config'`
+**Fix**: Ensure you are running scripts from the root directory. If running benchmarks, ensure `sys.path` is correctly set (already fixed in `benchmark.py`).
 
-### Connection refused to Qdrant
-**Error:** `Connection refused` or timeout errors
-
-**Fix:** 
-```bash
-docker-compose down
-docker-compose up -d
-```
-
-### Model download fails
-**Error:** Network errors during embedding model download
-
-**Fix:** Ensure you have internet connectivity for the first run.
-
----
-
-## Stopping the System
-
-```bash
-# Stop Safety Agent: Ctrl+C in its terminal
-
-# Stop Dashboard: Ctrl+C in its terminal
-
-# Stop Qdrant:
-docker-compose down
-```
+### `Vector dimension error`
+**Error**: `expected dim: 512, got 384`
+**Fix**: You are likely searching a visual collection with text embeddings. Ensure the dashboard is using the correct model for each collection.
 
 ---
 
 ## Data Reset
-
-To clear all data and start fresh:
-```bash
-docker-compose down -v
-rm -rf qdrant_storage
-rm alerts.json
-docker-compose up -d
-```
-
-Then re-run all agent scripts.
+To clear memory and start fresh:
+1. Delete collections in Qdrant Cloud UI.
+2. Run `python memory_manager.py` to re-initialize empty collections.
+3. Empty the `_inbox` folders.

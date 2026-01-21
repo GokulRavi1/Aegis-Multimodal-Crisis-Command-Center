@@ -34,6 +34,7 @@ class ImageHandler(FileSystemEventHandler):
         print("🧠 Pre-computing disaster class embeddings for Hybrid Detection...")
         self.labels = DISASTER_CLASSES
         self.label_embeddings = list(text_model.embed(self.labels))
+        self.bge_model = TextEmbedding(model_name="BAAI/bge-small-en-v1.5") # For tactical indexing
         print("✅ Hybrid Memory Ready.")
         
         # Initialize OCR and Geocoder
@@ -57,8 +58,12 @@ class ImageHandler(FileSystemEventHandler):
             return None
         
         try:
-            prompt = f"""Extract ONLY the geographic location (city, state, country, or region name) from this text. 
-            Return ONLY the location name, nothing else. If no location found, return 'NONE'.
+            prompt = f"""Extract the geographic location (City, State, or Country) from the following OCR text.
+            CRITICAL RULES:
+            1. ONLY return the location if it is a clear City, State, or Country name.
+            2. IGNORE single letters, noise characters, or fragments like "Ila", "Do", "No", "To".
+            3. If the text is ambiguous or does not contain a recognizable place name, return "NONE".
+            4. Return ONLY the place name, nothing else.
             
             Text: "{ocr_text}"
             
@@ -80,6 +85,32 @@ class ImageHandler(FileSystemEventHandler):
         except Exception as e:
             print(f"   ⚠️ LLM Error: {e}")
             return None
+
+    def generate_enriched_summary(self, disaster, location_name, ocr_text):
+        """Generate a detailed tactical summary for better search indexing."""
+        if not self.llm_client:
+            return f"Alert: {disaster} detected at {location_name}. {ocr_text}"
+            
+        try:
+            prompt = f"""Generate a 20-30 word tactical alert summary for a crisis database. 
+            Include the specific place name, the type of disaster, and a brief warning.
+            
+            Disaster: {disaster}
+            Location: {location_name}
+            OCR Evidence: {ocr_text}
+            
+            Format: [Location Name] alert: [Detailed description of issue] - [Warning/Action]."""
+            
+            completion = self.llm_client.chat.completions.create(
+                model="llama-3.3-70b-versatile",
+                messages=[{"role": "user", "content": prompt}],
+                temperature=0.7,
+                max_tokens=100
+            )
+            return completion.choices[0].message.content.strip()
+        except Exception as e:
+            print(f"   ⚠️ Summary LLM Error: {e}")
+            return f"Crisis Alert at {location_name}: {disaster} detected. OCR: {ocr_text[:50]}"
 
     def on_created(self, event):
         # ... logic unchanged ...
@@ -238,31 +269,63 @@ class ImageHandler(FileSystemEventHandler):
         if detected_location:
             alerts.append(f"BREAKING NEWS: {primary_disaster.upper()} IN {detected_location['name'].upper()}")
 
-        # Upsert (Note: Type is 'image')
+        # Prepare Payload
         payload = {
             "source": os.path.basename(image_path),
             "type": "image",
-            "detected_disaster": primary_disaster,
             "detected_disaster": primary_disaster,
             "confidence": {"visual": float(max_conf), "source": detection_source},
             "timestamp": datetime.datetime.now(datetime.timezone.utc).isoformat(),
             "detections": detections,
             "triggered_alerts": alerts,
             "ocr_text": ocr_text,
-            "location": detected_location if detected_location else {"lat": 28.7041, "lon": 77.1025}
+            "location": detected_location if detected_location else {"lat": 28.7041, "lon": 77.1025, "name": "Global Monitoring Area"}
         }
+
+        # --- LLM ENRICHED SUMMARY ---
+        enriched_summary = self.generate_enriched_summary(
+            primary_disaster, 
+            detected_location['name'] if detected_location else "Unknown Location",
+            ocr_text
+        )
+        print(f"   🤖 Enriched Summary: {enriched_summary}")
+        payload["content"] = enriched_summary
         
+        # 1. Upsert to Visual Memory (CLIP - 512d)
+        point_id = int(time.time() * 1000)
         self.client.upsert(
             collection_name=COLLECTION_NAME,
             points=[
                 models.PointStruct(
-                    id=int(time.time() * 1000),
+                    id=point_id,
                     vector=vector.tolist(),
                     payload=payload
                 )
             ]
         )
-        print(f"✅ Indexed Image: {primary_disaster}")
+        
+        # 2. Upsert to Tactical Memory (BGE - 384d) for high-score text search
+        # This solves the score issue for queries like "Kochi bridge"
+        try:
+            bge_vector = list(self.bge_model.embed([enriched_summary]))[0].tolist()
+            self.client.upsert(
+                collection_name="tactical_memory",
+                points=[
+                    models.PointStruct(
+                        id=point_id + 1, # Unique ID
+                        vector=bge_vector,
+                        payload={
+                            **payload,
+                            "data_type": "text",
+                            "is_visual_metadata": True # Flag to distinguish
+                        }
+                    )
+                ]
+            )
+        except Exception as e:
+            print(f"   ⚠️ Tactical indexing failed: {e}")
+
+        print(f"✅ Indexed Image & Summary: {primary_disaster}")
 
 def main():
     if not os.path.exists(IMAGE_INBOX):

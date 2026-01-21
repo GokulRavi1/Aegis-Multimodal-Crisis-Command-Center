@@ -9,7 +9,7 @@ pydub
 Pillow
 ultralytics
 groq
-groq
 python-dotenv
 easyocr
 geopy
+streamlit-autorefresh
