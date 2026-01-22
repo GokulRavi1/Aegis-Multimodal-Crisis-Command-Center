@@ -15,12 +15,14 @@
 ### 2. Intelligent Core
 *   **Advanced Memory Manager (`memory_manager.py`)**: Centralized lifecycle for embeddings, including TTL-based eviction and confidence scoring.
 *   **Analyst Agent (RAG)**: An LLM-powered reasoning engine that provides evidence-grounded sitreps with explicit source citations.
+*   **Robust LLM Manager (`llm_manager.py`)**: Multi-model fallback system (Llama-3.3-70B → Mixtral → Llama-3.1-8B) to ensure 100% uptime even during rate limits.
 *   **Retrieval Provenance (`retrieval_logger.py`)**: Full traceability of every AI response, logging queries, retrieved evidence IDs, and confidence scores.
 
 ### 3. Command Dashboard
 *   **📍 Crisis Operational Map**: Real-time visualization of hazards, civilians, and field data.
 *   **🔍 Semantic Search**: Multi-modal search with high-precision keyword filtering (e.g., "Bengaluru flood" correctly isolates local results).
-*   **💬 Safety AI Chat**: Interactive RAG analyst for querying the "Warzone Memory".
+*   **💬 Safety AI Chat**: Interactive "Safety First" Assistant that proactively warns users of threats found in the retrieved evidence.
+*   **⚡ Zero-Latency Alerts**: Pre-computed tactical summaries for sub-second dashboard updates.
 
 ---
 

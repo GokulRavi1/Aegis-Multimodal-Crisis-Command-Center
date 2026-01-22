@@ -56,7 +56,7 @@ Run all agents to start "listening" to their respective inboxes:
 
 ### Phase 2: Intelligence & Cleanup
 *   **Terminal 5**: `python analyst_agent.py` (Geospatial correlation & alert logging)
-*   **Terminal 6**: `python memory_manager.py` (Initializes collections and runs cleanup policies)
+*   **Terminal 6**: `python memory_manager.py` (Safe Collection Verify) — *Optional, agents now self-check.*
 
 ### Phase 3: Launch Dashboard
 *   **Terminal 7**: 
@@ -105,5 +105,5 @@ python generate_civilians.py
 ## Data Reset
 To clear memory and start fresh:
 1. Delete collections in Qdrant Cloud UI.
-2. Run `python memory_manager.py` to re-initialize empty collections.
+2. Run any agent (e.g., `python image_agent.py`) - The **Robust Startup** logic will automatically recreate all required collections (`visual_memory`, `audio_memory`, etc.).
 3. Empty the `_inbox` folders.
