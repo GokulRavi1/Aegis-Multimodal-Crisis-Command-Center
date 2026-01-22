@@ -36,5 +36,133 @@
         "score": 0.648
       }
     ]
+  },
+  {
+    "id": "log_1769063102029",
+    "timestamp": "2026-01-22T06:25:02.029246+00:00",
+    "query": "can i go to Chennai Corporation, Chennai is there any alert there?",
+    "session_id": null,
+    "retrieved_points": [
+      {
+        "id": 1769062645222,
+        "score": 0.616,
+        "source": "ChatGPT Image Jan 20, 2026, 03_47_11 PM.png",
+        "disaster_type": "collapsed building",
+        "content_preview": "BRIDGE COLLAPSE ALERT 2h '8j99JI FLp Do Do BREAKING NEWS DO Nc BRIDGE COLLAPSES IN KOCHI, KERALA! CA"
+      }
+    ],
+    "retrieval_count": 1,
+    "llm_model": "llama-3.3-70b-versatile",
+    "llm_prompt_length": 313,
+    "llm_response": "\u26a0\ufe0f WARNING: The provided evidence does not specifically mention Chennai Corporation, Chennai. However, since the evidence is related to a nearby region (Kochi, Kerala), it is essential to exercise caution when traveling to Chennai.\n\nAccording to [Evidence 1: ChatGPT Image Jan 20, 2026, 03_47_11 PM.png], there is a report of a partial bridge collapse in Kochi, Kerala, which may indicate potential infrastructure issues in the region. Although this incident is not directly related to Chennai, it is crucial to be aware of the situation and potential risks.\n\nProceed to Chennai Corporation, Chennai with caution, and stay informed about local conditions. Check for any updates or alerts specific to Chennai before traveling",
+    "citations": [
+      {
+        "point_id": 1769062645222,
+        "source": "ChatGPT Image Jan 20, 2026, 03_47_11 PM.png",
+        "score": 0.616
+      }
+    ]
+  },
+  {
+    "id": "log_1769063152620",
+    "timestamp": "2026-01-22T06:25:52.620255+00:00",
+    "query": "Thiruvanmiyur, Zone 13 Adyar, Chennai Corporation, is there any alert there?",
+    "session_id": null,
+    "retrieved_points": [
+      {
+        "id": 1769062645222,
+        "score": 0.625,
+        "source": "ChatGPT Image Jan 20, 2026, 03_47_11 PM.png",
+        "disaster_type": "collapsed building",
+        "content_preview": "BRIDGE COLLAPSE ALERT 2h '8j99JI FLp Do Do BREAKING NEWS DO Nc BRIDGE COLLAPSES IN KOCHI, KERALA! CA"
+      }
+    ],
+    "retrieval_count": 1,
+    "llm_model": "llama-3.3-70b-versatile",
+    "llm_prompt_length": 323,
+    "llm_response": "Based on the provided evidence, [Evidence 1: ChatGPT Image Jan 20, 2026, 03_47_11 PM.png], there is no direct mention of Thiruvanmiyur, Zone 13 Adyar, Chennai Corporation. The alert is related to a partial bridge collapse in Kochi, Kerala.\n\nSince the evidence does not indicate any safety threats in Thiruvanmiyur, Zone 13 Adyar, Chennai Corporation, but is related to a different location, I must advise: Proceed with caution, data is limited.",
+    "citations": [
+      {
+        "point_id": 1769062645222,
+        "source": "ChatGPT Image Jan 20, 2026, 03_47_11 PM.png",
+        "score": 0.625
+      }
+    ]
+  },
+  {
+    "id": "log_1769063205469",
+    "timestamp": "2026-01-22T06:26:45.469931+00:00",
+    "query": "bridge collapse in Kochi, Kerala,  is there any alert there?",
+    "session_id": null,
+    "retrieved_points": [
+      {
+        "id": 1769062645222,
+        "score": 0.887,
+        "source": "ChatGPT Image Jan 20, 2026, 03_47_11 PM.png",
+        "disaster_type": "collapsed building",
+        "content_preview": "BRIDGE COLLAPSE ALERT 2h '8j99JI FLp Do Do BREAKING NEWS DO Nc BRIDGE COLLAPSES IN KOCHI, KERALA! CA"
+      }
+    ],
+    "retrieval_count": 1,
+    "llm_model": "llama-3.3-70b-versatile",
+    "llm_prompt_length": 307,
+    "llm_response": "\u26a0\ufe0f WARNING: A partial bridge collapse has been reported in Kochi, Kerala. According to [Evidence 1: ChatGPT Image Jan 20, 2026, 03_47_11 PM.png], it is advised to avoid crossing the bridge and exercise extreme caution immediately. This indicates a potential safety threat to individuals in the area. It is essential to follow the advisory and avoid the affected bridge to minimize risk.",
+    "citations": [
+      {
+        "point_id": 1769062645222,
+        "source": "ChatGPT Image Jan 20, 2026, 03_47_11 PM.png",
+        "score": 0.887
+      }
+    ]
+  },
+  {
+    "id": "log_1769063365730",
+    "timestamp": "2026-01-22T06:29:25.730003+00:00",
+    "query": "is there any flood in Bengaluru ",
+    "session_id": null,
+    "retrieved_points": [
+      {
+        "id": 1769063261647,
+        "score": 0.827,
+        "source": "Bengaluru has increasingly faced ur.txt",
+        "disaster_type": "flood",
+        "content_preview": "Bengaluru has increasingly faced urban flooding due to intense rainfall, rapid urbanization, and the"
+      },
+      {
+        "id": 1769063287255,
+        "score": 0.676,
+        "source": "NoteGPT_Speech_1768910627236.wav",
+        "disaster_type": "flood",
+        "content_preview": "flash floods in Chennai often strike with little warning particularly in low lying neighbourhood suc"
+      },
+      {
+        "id": 1769062645222,
+        "score": 0.637,
+        "source": "ChatGPT Image Jan 20, 2026, 03_47_11 PM.png",
+        "disaster_type": "collapsed building",
+        "content_preview": "BRIDGE COLLAPSE ALERT 2h '8j99JI FLp Do Do BREAKING NEWS DO Nc BRIDGE COLLAPSES IN KOCHI, KERALA! CA"
+      }
+    ],
+    "retrieval_count": 3,
+    "llm_model": "llama-3.3-70b-versatile",
+    "llm_prompt_length": 630,
+    "llm_response": "\u26a0\ufe0f WARNING: There is a potential risk of flooding in Bengaluru. According to [Evidence 1: Bengaluru has increasingly faced ur.txt], the city has faced urban flooding due to intense rainfall and rapid urbanization. Although the other evidence files [Evidence 2: NoteGPT_Speech_1768910627236.wav] and [Evidence 3: ChatGPT Image Jan 20, 2026, 03_47_11 PM.png] do not directly mention Bengaluru, they do indicate flooding and infrastructure issues in other nearby cities, suggesting a regional vulnerability to flooding. Proceeding with caution is advised, especially during intense rainfall events.",
+    "citations": [
+      {
+        "point_id": 1769063261647,
+        "source": "Bengaluru has increasingly faced ur.txt",
+        "score": 0.827
+      },
+      {
+        "point_id": 1769063287255,
+        "source": "NoteGPT_Speech_1768910627236.wav",
+        "score": 0.676
+      },
+      {
+        "point_id": 1769062645222,
+        "source": "ChatGPT Image Jan 20, 2026, 03_47_11 PM.png",
+        "score": 0.637
+      }
+    ]
   }
 ]

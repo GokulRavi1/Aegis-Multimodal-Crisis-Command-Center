@@ -24,7 +24,11 @@ class TextHandler(FileSystemEventHandler):
         self.geolocator = Nominatim(user_agent="aegis_crisis_center", timeout=5)
         
         # Initialize LLM
+        # Initialize LLM & Memory Manager
         self.llm_manager = get_llm_manager()
+        from memory_manager import get_memory_manager
+        self.memory_manager = get_memory_manager()
+        self.memory_manager.ensure_collections()
 
     def extract_location_with_llm(self, text):
         """Use LLM to extract location from text."""
@@ -130,15 +134,11 @@ class TextHandler(FileSystemEventHandler):
                 "triggered_alerts": alerts
             }
             
-            self.client.upsert(
-                collection_name=COLLECTION_NAME,
-                points=[
-                    models.PointStruct(
-                        id=int(time.time() * 1000),
-                        vector=vector.tolist(),
-                        payload=payload
-                    )
-                ]
+            self.memory_manager.upsert_point(
+                collection=COLLECTION_NAME,
+                vector=vector.tolist(),
+                payload=payload,
+                point_id=int(time.time() * 1000)
             )
             print(f"✅ Indexed text document. Disaster: {detected_disaster}")
             
@@ -151,7 +151,7 @@ def main():
         print(f"📂 Created {TEXT_INBOX}")
 
     client = get_qdrant_client()
-    ensure_collection(client, COLLECTION_NAME, 384)
+    # ensure_collection(client, COLLECTION_NAME, 384)
     
     print("Loading Text Embedding Model...")
     embed_model = TextEmbedding(model_name="BAAI/bge-small-en-v1.5")

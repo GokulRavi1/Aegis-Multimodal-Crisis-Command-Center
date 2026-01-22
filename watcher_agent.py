@@ -43,7 +43,13 @@ class VideoHandler(FileSystemEventHandler):
         print("✅ OCR & Geolocation Ready.")
         
         # Initialize LLM
+        # Initialize LLM
         self.llm_manager = get_llm_manager()
+        
+        # Initialize Memory Manager
+        from memory_manager import get_memory_manager
+        self.memory_manager = get_memory_manager()
+        self.memory_manager.ensure_collections() # Ensure all exist
 
     def extract_location_with_llm(self, text):
         """Use LLM to extract location from text."""
@@ -230,23 +236,19 @@ class VideoHandler(FileSystemEventHandler):
             
             # Upsert with retry logic for network timeouts
             for attempt in range(3):
-                try:
-                    self.client.upsert(
-                        collection_name=COLLECTION_NAME,
-                        points=[
-                            models.PointStruct(
-                                id=int(time.time() * 1000),
-                                vector=vector.tolist(),
-                                payload=payload
-                            )
-                        ]
-                    )
+                success = self.memory_manager.upsert_point(
+                    collection=COLLECTION_NAME,
+                    vector=vector.tolist(),
+                    payload=payload,
+                    point_id=int(time.time() * 1000)
+                )
+                if success:
                     break
-                except Exception as e:
+                else:
                     if attempt < 2:
                         time.sleep(1 * (attempt + 1))  # Backoff: 1s, 2s
                     else:
-                        print(f"   ⚠️ Upsert failed after retries: {e}")
+                        print(f"   ⚠️ Upsert failed after retries.")
             
         cap.release()
         print(f"✅ Finished Video.")
@@ -259,7 +261,7 @@ def main():
         print(f"📂 Created {VIDEO_INBOX}")
 
     client = get_qdrant_client()
-    ensure_collection(client, COLLECTION_NAME, 512)
+    # ensure_collection(client, COLLECTION_NAME, 512) <--- managed by MemoryManager now
     
     print("⏳ Loading Models for Watcher Agent...")
     embed_model = ImageEmbedding(model_name="Qdrant/clip-ViT-B-32-vision")

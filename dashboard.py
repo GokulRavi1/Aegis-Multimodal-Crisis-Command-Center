@@ -218,7 +218,8 @@ def get_rag_response(query):
         visual_q = list(clip_text_model.embed([query]))[0]
         
         results = []
-        score_threshold = 0.70  # Increased for higher quality
+        results = []
+        score_threshold = 0.55  # Lowered to capture specific queries (relies on Strict Keyword Filter)
 
         # Search Visual
         if client.collection_exists(VISUAL_COLLECTION):
@@ -272,19 +273,21 @@ def get_rag_response(query):
         if not context_str:
             return "No recent data found matching your query.", []
 
-        # Grounded system prompt with citation requirements
-        sys_prompt = """You are the Aegis Analyst Agent. 
-
-CRITICAL RULES:
-1. ONLY use facts from the provided Evidence.
-2. CITE sources by mentioning filenames (e.g., "Based on [filename.png]...").
-3. If evidence conflicts, trust VISUAL > AUDIO > TEXT.
-4. Provide a 20-30 word tactical summary.
-5. DO NOT invent or hallucinate information."""
+        # Grounded system prompt with Safety AI Persona
+        sys_prompt = """You are the Aegis Safety AI Assistant. 
+        
+        YOUR MISSION:
+        1. Analyze the provided evidence for safety threats.
+        2. IF DANGER EXISTS: You MUST start with "⚠️ WARNING:" and advise caution.
+        3. IF UNCERTAIN: Advise "Proceed with caution, data is limited."
+        4. CITE SOURCES: Always reference the evidence files (e.g., [video.mp4]).
+        5. Be concise, direct, and protective of the user."""
 
         llm_manager = get_llm_manager()
         if not llm_manager:
             return "⚠️ LLM Service Unavailable.", []
+
+        full_prompt = f"QUERY: {query}\n\n=== EVIDENCE ===\n{context_str}\n\n=== SAFETY ANALYSIS (cite sources) ==="
 
         response_text = llm_manager.chat_completion(
             messages=[

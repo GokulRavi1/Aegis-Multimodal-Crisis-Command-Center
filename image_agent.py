@@ -45,7 +45,13 @@ class ImageHandler(FileSystemEventHandler):
         print("✅ OCR & Geolocation Ready.")
         
         # Initialize LLM for smart location extraction
+        # Initialize LLM for smart location extraction
         self.llm_manager = get_llm_manager()
+        
+        # Initialize Memory Manager
+        from memory_manager import get_memory_manager
+        self.memory_manager = get_memory_manager()
+        self.memory_manager.ensure_collections() # Creates All (visual, tactical, etc.)
 
     def extract_location_with_llm(self, ocr_text):
         """Use LLM to extract location/place names from OCR text."""
@@ -287,34 +293,27 @@ class ImageHandler(FileSystemEventHandler):
         
         # 1. Upsert to Visual Memory (CLIP - 512d)
         point_id = int(time.time() * 1000)
-        self.client.upsert(
-            collection_name=COLLECTION_NAME,
-            points=[
-                models.PointStruct(
-                    id=point_id,
-                    vector=vector.tolist(),
-                    payload=payload
-                )
-            ]
+        self.memory_manager.upsert_point(
+            collection=COLLECTION_NAME,
+            vector=vector.tolist(),
+            payload=payload,
+            point_id=point_id
         )
         
         # 2. Upsert to Tactical Memory (BGE - 384d) for high-score text search
         # This solves the score issue for queries like "Kochi bridge"
         try:
             bge_vector = list(self.bge_model.embed([enriched_summary]))[0].tolist()
-            self.client.upsert(
-                collection_name="tactical_memory",
-                points=[
-                    models.PointStruct(
-                        id=point_id + 1, # Unique ID
-                        vector=bge_vector,
-                        payload={
-                            **payload,
-                            "data_type": "text",
-                            "is_visual_metadata": True # Flag to distinguish
-                        }
-                    )
-                ]
+            tactical_payload = {
+                **payload,
+                "data_type": "text",
+                "is_visual_metadata": True # Flag to distinguish
+            }
+            self.memory_manager.upsert_point(
+                collection="tactical_memory",
+                vector=bge_vector,
+                payload=tactical_payload,
+                point_id=point_id + 1
             )
         except Exception as e:
             print(f"   ⚠️ Tactical indexing failed: {e}")
@@ -327,7 +326,7 @@ def main():
         print(f"📂 Created {IMAGE_INBOX}")
 
     client = get_qdrant_client()
-    ensure_collection(client, COLLECTION_NAME, 512)
+    # ensure_collection(client, COLLECTION_NAME, 512) <--- No longer needed, MemoryManager does it
     
     print("⏳ Loading Models for Image Agent...")
     embed_model = ImageEmbedding(model_name="Qdrant/clip-ViT-B-32-vision")

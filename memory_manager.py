@@ -22,15 +22,15 @@ class MemoryManager:
         "session_memory": {"dim": 384, "description": "Short-term working memory"},
     }
     
-    # Standard payload schema
+    # Standard payload schema (Matches active Dashboard usage)
     PAYLOAD_SCHEMA = {
         "source": str,           # Original filename
-        "modality": str,         # image, video, audio, text
+        "type": str,             # visual, audio, text (was modality)
         "timestamp": str,        # ISO format
-        "disaster_type": str,    # Detected disaster class
+        "detected_disaster": str,# Detected disaster class (was disaster_type)
         "confidence": float,     # Detection confidence
         "location": dict,        # {lat, lon, name}
-        "content": str,          # Text content (transcript, OCR, etc)
+        "content": str,          # Text content/Transcript/OCR
         "revision": int,         # Update counter
         "session_id": str,       # For session memory
     }
@@ -57,14 +57,27 @@ class MemoryManager:
     def upsert_point(
         self,
         collection: str,
-        point_id: int,
         vector: List[float],
-        payload: Dict[str, Any]
+        payload: Dict[str, Any],
+        point_id: Optional[int] = None
     ) -> bool:
-        """Insert or update a point with standardized payload."""
-        # Add metadata
+        """
+        Insert or update a point with standardized payload.
+        Auto-generates ID if not provided.
+        """
+        # Add metadata & Consistency Defaults
         payload["revision"] = payload.get("revision", 0) + 1
         payload["last_updated"] = datetime.datetime.now(datetime.timezone.utc).isoformat()
+        
+        # Ensure critical fields exist
+        if "timestamp" not in payload:
+             payload["timestamp"] = datetime.datetime.now(datetime.timezone.utc).isoformat()
+        if "detected_disaster" not in payload:
+             payload["detected_disaster"] = "None"
+             
+        # Auto-ID if missing (Current time in ms)
+        if point_id is None:
+            point_id = int(time.time() * 1000)
         
         try:
             self.client.upsert(
