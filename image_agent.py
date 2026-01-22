@@ -15,6 +15,7 @@ import os
 from groq import Groq
 from dotenv import load_dotenv
 from config import get_qdrant_client, ensure_collection, DISASTER_CLASSES
+from llm_manager import get_llm_manager
 
 load_dotenv()
 
@@ -44,43 +45,38 @@ class ImageHandler(FileSystemEventHandler):
         print("✅ OCR & Geolocation Ready.")
         
         # Initialize LLM for smart location extraction
-        self.groq_key = os.getenv("GROQ_API_KEY")
-        if self.groq_key:
-            self.llm_client = Groq(api_key=self.groq_key)
-            print("✅ LLM (Groq) Ready for smart location extraction.")
-        else:
-            self.llm_client = None
-            print("⚠️ LLM not available. Using basic location extraction.")
+        self.llm_manager = get_llm_manager()
 
     def extract_location_with_llm(self, ocr_text):
         """Use LLM to extract location/place names from OCR text."""
-        if not self.llm_client or not ocr_text:
+        if not self.llm_manager or not ocr_text:
             return None
         
         try:
-            prompt = f"""Extract the geographic location (City, State, or Country) from the following OCR text.
+            prompt = f"""Extract a SPECIFIC geographic location (City, District, or State) from this text.
             CRITICAL RULES:
-            1. ONLY return the location if it is a clear City, State, or Country name.
-            2. IGNORE single letters, noise characters, or fragments like "Ila", "Do", "No", "To".
-            3. If the text is ambiguous or does not contain a recognizable place name, return "NONE".
-            4. Return ONLY the place name, nothing else.
+            1. REJECT BROAD COUNTRY NAMES like "India", "USA", "America", "UK". Return "NONE" if only country is found.
+            2. REJECT noise words and single letters.
+            3. Return ONLY precise locations (e.g., "Mumbai", "Kerala", "Visakhapatnam").
+            4. If unsure or no clear specific location found, return "NONE".
             
-            Text: "{ocr_text}"
+            Text: "{ocr_text[:300]}"
             
             Location:"""
             
-            completion = self.llm_client.chat.completions.create(
-                model="llama-3.3-70b-versatile",
+            location = self.llm_manager.chat_completion(
                 messages=[{"role": "user", "content": prompt}],
-                temperature=0.1,
-                max_tokens=50
+                max_tokens=50,
+                temperature=0.1
             )
             
-            location = completion.choices[0].message.content.strip()
+            noise_words = ["none", "ila", "indian", "india", "the", "express", "usually", "we", "for", "news", "usa", "uk", "america"]
             
-            if location and location.upper() != "NONE":
-                print(f"   🤖 LLM Extracted Location: {location}")
-                return location
+            if location:
+                clean_loc = location.strip().lower()
+                if clean_loc not in noise_words and len(clean_loc) > 3:
+                     print(f"   🤖 LLM Extracted Location: {location}")
+                     return location.strip()
             return None
         except Exception as e:
             print(f"   ⚠️ LLM Error: {e}")
@@ -88,7 +84,7 @@ class ImageHandler(FileSystemEventHandler):
 
     def generate_enriched_summary(self, disaster, location_name, ocr_text):
         """Generate a detailed tactical summary for better search indexing."""
-        if not self.llm_client:
+        if not self.llm_manager:
             return f"Alert: {disaster} detected at {location_name}. {ocr_text}"
             
         try:
@@ -101,13 +97,11 @@ class ImageHandler(FileSystemEventHandler):
             
             Format: [Location Name] alert: [Detailed description of issue] - [Warning/Action]."""
             
-            completion = self.llm_client.chat.completions.create(
-                model="llama-3.3-70b-versatile",
+            return self.llm_manager.chat_completion(
                 messages=[{"role": "user", "content": prompt}],
-                temperature=0.7,
-                max_tokens=100
+                max_tokens=100,
+                temperature=0.7
             )
-            return completion.choices[0].message.content.strip()
         except Exception as e:
             print(f"   ⚠️ Summary LLM Error: {e}")
             return f"Crisis Alert at {location_name}: {disaster} detected. OCR: {ocr_text[:50]}"

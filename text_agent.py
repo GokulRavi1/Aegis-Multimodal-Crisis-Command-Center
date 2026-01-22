@@ -9,6 +9,7 @@ from groq import Groq
 from geopy.geocoders import Nominatim
 from dotenv import load_dotenv
 from config import get_qdrant_client, ensure_collection, DISASTER_CLASSES
+from llm_manager import get_llm_manager
 
 load_dotenv()
 
@@ -23,41 +24,38 @@ class TextHandler(FileSystemEventHandler):
         self.geolocator = Nominatim(user_agent="aegis_crisis_center", timeout=5)
         
         # Initialize LLM
-        self.groq_key = os.getenv("GROQ_API_KEY")
-        if self.groq_key:
-            self.llm_client = Groq(api_key=self.groq_key)
-            print("✅ LLM Ready for smart location extraction.")
-        else:
-            self.llm_client = None
-            print("⚠️ LLM not available.")
+        self.llm_manager = get_llm_manager()
 
     def extract_location_with_llm(self, text):
         """Use LLM to extract location from text."""
-        if not self.llm_client or not text:
+        if not self.llm_manager or not text:
             return None
         
         try:
-            prompt = f"""Extract ONLY ONE primary geographic location (city or state) from this text. 
-            Return ONLY the single most important location name, nothing else. 
-            Do NOT return multiple locations. If multiple mentioned, pick the main one.
-            If no location found, return 'NONE'.
+            prompt = f"""Extract a SPECIFIC geographic location (City, District, or State) from this text.
+            CRITICAL RULES:
+            1. REJECT BROAD COUNTRY NAMES like "India", "USA", "America", "UK". Return "NONE" if only country is found.
+            2. REJECT common nouns not used as places.
+            3. Return ONLY precise locations (e.g., "Mumbai", "Kerala", "Visakhapatnam").
+            4. If text describes a general region without specific city, return "NONE".
             
             Text: "{text[:500]}"
             
             Location:"""
             
-            completion = self.llm_client.chat.completions.create(
-                model="llama-3.3-70b-versatile",
+            location = self.llm_manager.chat_completion(
                 messages=[{"role": "user", "content": prompt}],
-                temperature=0.1,
-                max_tokens=50
+                max_tokens=50, 
+                temperature=0.1
             )
             
-            location = completion.choices[0].message.content.strip()
+            noise_words = ["none", "india", "usa", "uk", "america", "region", "country"]
             
-            if location and location.upper() != "NONE":
-                print(f"   🤖 LLM Extracted Location: {location}")
-                return location
+            if location:
+                clean_loc = location.strip().lower()
+                if clean_loc not in noise_words and len(clean_loc) > 3:
+                    print(f"   🤖 LLM Extracted Location: {location}")
+                    return location.strip()
             return None
         except Exception as e:
             print(f"   ⚠️ LLM Error: {e}")

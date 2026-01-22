@@ -10,6 +10,7 @@ from groq import Groq
 from geopy.geocoders import Nominatim
 from dotenv import load_dotenv
 from config import get_qdrant_client, ensure_collection, DISASTER_CLASSES
+from llm_manager import get_llm_manager
 
 load_dotenv()
 
@@ -24,18 +25,12 @@ class AudioHandler(FileSystemEventHandler):
         self.recognizer = sr.Recognizer()
         self.geolocator = Nominatim(user_agent="aegis_crisis_center")
         
-        # Initialize LLM
-        self.groq_key = os.getenv("GROQ_API_KEY")
-        if self.groq_key:
-            self.llm_client = Groq(api_key=self.groq_key)
-            print("✅ LLM Ready for smart location extraction.")
-        else:
-            self.llm_client = None
-            print("⚠️ LLM not available.")
+        # Initialize LLM Manager
+        self.llm_manager = get_llm_manager()
 
     def extract_location_with_llm(self, text):
         """Use LLM to extract location from text."""
-        if not self.llm_client or not text:
+        if not self.llm_manager or not text:
             return None
         
         try:
@@ -46,14 +41,11 @@ class AudioHandler(FileSystemEventHandler):
             
             Location:"""
             
-            completion = self.llm_client.chat.completions.create(
-                model="llama-3.3-70b-versatile",
+            location = self.llm_manager.chat_completion(
                 messages=[{"role": "user", "content": prompt}],
-                temperature=0.1,
-                max_tokens=50
+                max_tokens=50,
+                temperature=0.1
             )
-            
-            location = completion.choices[0].message.content.strip()
             
             if location and location.upper() != "NONE":
                 print(f"   🤖 LLM Extracted Location: {location}")

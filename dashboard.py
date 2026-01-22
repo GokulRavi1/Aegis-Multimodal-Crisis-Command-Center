@@ -6,6 +6,7 @@ import time
 from groq import Groq
 from fastembed import TextEmbedding
 from config import get_qdrant_client
+from llm_manager import get_llm_manager
 
 # Auto-refresh setup (DISABLED - was disrupting user workflow)
 # try:
@@ -78,8 +79,13 @@ if st.sidebar.button("🔄 Refresh Alerts"):
 # Dynamic Alert Feed - Fetch from all Qdrant collections
 def generate_alert_text(payload, data_type):
     """Use LLM to generate a concise alert message."""
-    groq_key = os.getenv("GROQ_API_KEY")
-    if not groq_key:
+    # FAST PATH: Use pre-computed enriched content if available
+    content = payload.get("content", "")
+    if content and len(content) < 150: # Use pre-computed summary if short enough
+        return content
+        
+    llm_manager = get_llm_manager()
+    if not llm_manager:
         # Fallback to simple format
         disaster = payload.get("detected_disaster", "Unknown")
         location = payload.get("location", {})
@@ -87,8 +93,6 @@ def generate_alert_text(payload, data_type):
         return f"{disaster.upper()}: {loc_name[:30]}" if loc_name else disaster.upper()
     
     try:
-        g = Groq(api_key=groq_key)
-        
         # Build context based on type
         if data_type == "visual":
             ctx = f"Disaster: {payload.get('detected_disaster')}, Location: {payload.get('location', {}).get('name', 'Unknown')}, OCR: {payload.get('ocr_text', '')[:100]}"
@@ -97,8 +101,7 @@ def generate_alert_text(payload, data_type):
         else:
             ctx = f"Text Report: {payload.get('content', '')[:150]}"
         
-        completion = g.chat.completions.create(
-            model="llama-3.3-70b-versatile",
+        return llm_manager.chat_completion(
             messages=[
                 {"role": "system", "content": "Generate a 10-15 word emergency alert headline. Be direct, tactical. No quotes."},
                 {"role": "user", "content": ctx}
@@ -106,7 +109,6 @@ def generate_alert_text(payload, data_type):
             temperature=0.3,
             max_tokens=30
         )
-        return completion.choices[0].message.content.strip()
     except:
         disaster = payload.get("detected_disaster", "Unknown")
         return f"ALERT: {disaster.upper()}"
@@ -115,13 +117,28 @@ try:
     all_alerts = []
     
     # 1. High-Priority Analyst Alerts (from alerts.json)
+    # Only show recent alerts (within last 24 hours)
+    import datetime
+    now = datetime.datetime.now(datetime.timezone.utc)
+    
     if os.path.exists(ALERT_FILE):
         try:
             with open(ALERT_FILE, "r") as f:
                 analyst_alerts = json.load(f)
                 for a in analyst_alerts[:10]:
+                    # Check if alert is recent (within 24 hours)
+                    alert_ts = a.get("timestamp", "")
+                    if alert_ts:
+                        try:
+                            alert_time = datetime.datetime.fromisoformat(alert_ts.replace("Z", "+00:00"))
+                            age = (now - alert_time).total_seconds()
+                            if age > 86400:  # Skip if older than 24 hours
+                                continue
+                        except:
+                            pass  # If can't parse, include it
+                    
                     all_alerts.append({
-                        "timestamp": a.get("timestamp", ""),
+                        "timestamp": alert_ts,
                         "type": "🛡️ ANALYST",
                         "msg": a.get("msg", ""),
                         "payload": a,
@@ -265,18 +282,17 @@ CRITICAL RULES:
 4. Provide a 20-30 word tactical summary.
 5. DO NOT invent or hallucinate information."""
 
-        g_client = Groq(api_key=groq_key)
-        full_prompt = f"QUERY: {query}\n\n=== EVIDENCE ===\n{context_str}\n\n=== ANALYSIS (cite sources) ==="
-        
-        completion = g_client.chat.completions.create(
-            model="llama-3.3-70b-versatile",
+        llm_manager = get_llm_manager()
+        if not llm_manager:
+            return "⚠️ LLM Service Unavailable.", []
+
+        response_text = llm_manager.chat_completion(
             messages=[
                 {"role": "system", "content": sys_prompt},
                 {"role": "user", "content": full_prompt}
             ],
             temperature=0.3, max_tokens=150
         )
-        response_text = completion.choices[0].message.content
         
         # Log retrieval provenance
         if logger:
@@ -460,13 +476,11 @@ with tab2:
     
     def generate_warning_summary(payload, data_type):
         """Generate 10-20 word warning from LLM."""
-        groq_key = os.getenv("GROQ_API_KEY")
-        if not groq_key:
+        llm_manager = get_llm_manager()
+        if not llm_manager:
             return f"⚠️ {payload.get('detected_disaster', 'Alert').upper()}"
         
         try:
-            g = Groq(api_key=groq_key)
-            
             if data_type == "visual":
                 ctx = f"Disaster: {payload.get('detected_disaster')}, Location: {payload.get('location', {}).get('name', 'Unknown')}, OCR Text: {payload.get('ocr_text', '')[:150]}"
             elif data_type == "audio":
@@ -474,16 +488,14 @@ with tab2:
             else:
                 ctx = f"Report: {payload.get('content', '')[:200]}"
             
-            completion = g.chat.completions.create(
-                model="llama-3.3-70b-versatile",
+            generated = llm_manager.chat_completion(
                 messages=[
                     {"role": "system", "content": "Generate a 10-20 word emergency warning based on this crisis data. Be direct (example: 'Major flooding in Saidapet area - evacuation recommended')."},
                     {"role": "user", "content": ctx}
                 ],
-                temperature=0.3,
-                max_tokens=40
+                temperature=0.3, max_tokens=40
             )
-            return completion.choices[0].message.content.strip()
+            return generated if generated else f"⚠️ {payload.get('detected_disaster', 'Alert').upper()}"
         except:
             return f"⚠️ {payload.get('detected_disaster', 'Alert').upper()}"
     
@@ -492,13 +504,35 @@ with tab2:
         all_results = []
         
         # Extract keywords from query for filtering
-        # Keep original case to detect location names (capitalized words)
-        original_words = [w for w in query.split() if len(w) > 2]
-        location_keywords = [w.lower() for w in original_words if w[0].isupper()]  # Capitalized = likely location
-        query_words = [w.lower() for w in original_words]
+        # Improved: Look for "in [location]" pattern or known city names
+        import re
         
+        query_lower = query.lower()
+        required_keywords = []
+        
+        # 1. Check for "in [place]" pattern
+        in_pattern = re.search(r'\bin\s+([a-zA-Z]+)', query_lower)
+        if in_pattern:
+            required_keywords.append(in_pattern.group(1))
+            
+        # 2. Check for known major locations if no "in" pattern found
+        # (Add common operational areas here)
+        known_locations = ["chennai", "bengaluru", "mumbai", "delhi", "kerala", "visakhapatnam", "andhra", "tamil nadu"]
+        if not required_keywords:
+            for loc in known_locations:
+                if loc in query_lower:
+                    required_keywords.append(loc)
+        
+        # 3. Fallback: Check for capitalized words (if user typed "Chennai Flood")
+        if not required_keywords:
+            original_words = [w for w in query.split() if len(w) > 2]
+            required_keywords = [w.lower() for w in original_words if w[0].isupper()]
+
         def matches_query_keywords(payload):
-            """Check if payload contains location keywords from the query."""
+            """Check if payload matches required location keywords."""
+            if not required_keywords:
+                return True # No specific location requested
+                
             # Get all searchable text from payload
             searchable = ""
             loc = payload.get("location", {})
@@ -507,13 +541,10 @@ with tab2:
             searchable += payload.get("ocr_text", "").lower() + " "
             searchable += payload.get("transcript", "").lower() + " "
             searchable += payload.get("content", "").lower() + " "
-            searchable += payload.get("source", "").lower() + " "
-            searchable += payload.get("detected_disaster", "").lower() + " "
             
-            # If query contains location keywords, filter strictly
-            if location_keywords:
-                return any(kw in searchable for kw in location_keywords)
-            return True  # No location keywords, accept all
+            # Strict And-Logic: Must contain at least one of the required location keywords
+            # (If we extracted multiple, typically we want to match the specific one)
+            return any(kw in searchable for kw in required_keywords)
         
         # Search Visual Memory (CLIP embeddings)
         visual_q = list(clip_text_model.embed([query]))[0]
