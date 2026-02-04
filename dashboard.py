@@ -7,6 +7,11 @@ from groq import Groq
 from fastembed import TextEmbedding
 from config import get_qdrant_client
 from llm_manager import get_llm_manager
+from critic_agent import get_critic_agent
+from critic_memory import get_critic_memory
+from retrieval_tools import RetrievalToolkit
+from episodic_memory import get_episodic_memory
+from planner_agent import get_planner_agent
 
 # Auto-refresh setup (DISABLED - was disrupting user workflow)
 # try:
@@ -199,117 +204,170 @@ try:
 except Exception as e:
     st.sidebar.warning(f"Alert feed error: {e}")
 
-# --- RAG Logic for Chat ---
+# --- RAG Logic for Chat with Strategic Retrieval (Tool Use) ---
+# --- RAG Logic for Chat with Strategic Retrieval (Tool Use) ---
+# --- RAG Logic for Chat with Planner Agent ---
 def get_rag_response(query):
+    """
+    Generate a response using Explicit Planner + Strategic Retrieval + Critic + Episodic Memory.
+    
+    Flow:
+    1. Retrieve Episodic Context.
+    2. Planner Agent: Decomposes query into retrieval steps.
+    3. Execution: Runs retrieval tools (Visual/Audio/Tactical).
+    4. Synthesis: Analyst LLM generates final answer from evidence.
+    5. Critic: Verifies quality.
+    """
     groq_key = os.getenv("GROQ_API_KEY")
     if not groq_key:
-        return "⚠️ Error: Groq API Key not found. Please check your .env configuration.", []
+        return "⚠️ Error: Groq API Key not found.", [], None
 
     try:
         # Import retrieval logger
         try:
-            from retrieval_logger import get_retrieval_logger, format_evidence_for_llm, create_grounded_prompt
+            from retrieval_logger import get_retrieval_logger
             logger = get_retrieval_logger()
         except:
             logger = None
         
-        # 1. Embed Query
-        text_q = list(text_model.embed([query]))[0]
-        visual_q = list(clip_text_model.embed([query]))[0]
-        
-        results = []
-        results = []
-        score_threshold = 0.55  # Lowered to capture specific queries (relies on Strict Keyword Filter)
-
-        # Search Visual
-        if client.collection_exists(VISUAL_COLLECTION):
-            vis_res = client.query_points(collection_name=VISUAL_COLLECTION, query=visual_q.tolist(), limit=5, with_payload=True)
-            for hit in vis_res.points:
-                if hit.score > score_threshold:
-                    results.append({"type": "visual", "score": hit.score, "payload": hit.payload, "id": hit.id})
-
-        # Search Audio
-        if client.collection_exists(AUDIO_COLLECTION):
-            aud_res = client.query_points(collection_name=AUDIO_COLLECTION, query=text_q.tolist(), limit=5, with_payload=True)
-            for hit in aud_res.points:
-                if hit.score > score_threshold:
-                    results.append({"type": "audio", "score": hit.score, "payload": hit.payload, "id": hit.id})
-
-        # Search Tactical
-        if client.collection_exists(TACTICAL_COLLECTION):
-            tac_res = client.query_points(collection_name=TACTICAL_COLLECTION, query=text_q.tolist(), limit=5, with_payload=True)
-            for hit in tac_res.points:
-                if hit.score > score_threshold:
-                    results.append({"type": "text", "score": hit.score, "payload": hit.payload, "id": hit.id})
-
-        # Sort and limit to top-k
-        results.sort(key=lambda x: x['score'], reverse=True)
-        top_results = results[:5]
-
-        # Format evidence for logging
-        retrieved_points = [
-            {
-                "id": r["id"],
-                "score": round(r["score"], 3),
-                "source": r["payload"].get("source", "Unknown"),
-                "disaster_type": r["payload"].get("detected_disaster", "Unknown"),
-                "content_preview": (r["payload"].get("ocr_text", "") or r["payload"].get("transcript", "") or r["payload"].get("content", ""))[:100]
-            }
-            for r in top_results
-        ]
-
-        # Generate context with citations
-        context_str = ""
-        for i, r in enumerate(top_results, 1):
-            p = r['payload']
-            src = p.get('source', 'Unknown')
-            if r['type'] == 'visual':
-                context_str += f"[Evidence {i}: {src}] Type: VIDEO/IMAGE | Disaster: {p.get('detected_disaster')} | Text: {p.get('ocr_text', 'N/A')[:100]}\n"
-            elif r['type'] == 'audio':
-                context_str += f"[Evidence {i}: {src}] Type: AUDIO | Transcript: {p.get('transcript', 'N/A')[:100]}\n"
-            else:
-                context_str += f"[Evidence {i}: {src}] Type: TEXT | Content: {p.get('content', 'N/A')[:100]}\n"
-
-        if not context_str:
-            return "No recent data found matching your query.", []
-
-        # Grounded system prompt with Safety AI Persona
-        sys_prompt = """You are the Aegis Safety AI Assistant. 
-        
-        YOUR MISSION:
-        1. Analyze the provided evidence for safety threats.
-        2. IF DANGER EXISTS: You MUST start with "⚠️ WARNING:" and advise caution.
-        3. IF UNCERTAIN: Advise "Proceed with caution, data is limited."
-        4. CITE SOURCES: Always reference the evidence files (e.g., [video.mp4]).
-        5. Be concise, direct, and protective of the user."""
-
+        # Initialize Components
+        critic = get_critic_agent()
+        critic_memory = get_critic_memory()
+        episodic_memory = get_episodic_memory()
+        planner = get_planner_agent() # NEW
+        toolkit = RetrievalToolkit(client, text_model, clip_text_model)
         llm_manager = get_llm_manager()
+        
         if not llm_manager:
-            return "⚠️ LLM Service Unavailable.", []
+            return "⚠️ LLM Service Unavailable.", [], None
 
-        full_prompt = f"QUERY: {query}\n\n=== EVIDENCE ===\n{context_str}\n\n=== SAFETY ANALYSIS (cite sources) ==="
+        # 1. RETRIEVE EPISODIC CONTEXT
+        past_context = episodic_memory.retrieve_context(query)
+        context_str = "\n- ".join(past_context) if past_context else "No prior context."
+        
+        # 2. CREATE AND EXECUTE PLAN
+        collected_evidence = []
+        plan_steps = planner.create_plan(query, context=context_str)
+        
+        if plan_steps:
+            with st.status("🏗️ Executing Plan...", expanded=True) as status:
+                for step in plan_steps:
+                    st.write(f"🔹 {step.tool}: {step.query}")
+                    try:
+                        # Dynamic Tool Execution
+                        if hasattr(toolkit, step.tool):
+                            tool_func = getattr(toolkit, step.tool)
+                            result_data = tool_func(step.query)
+                            
+                            if "result" in result_data and isinstance(result_data["result"], list):
+                                for item in result_data["result"]:
+                                    item_formatted = {
+                                        "id": item.get("source", "unknown"),
+                                        "score": item.get("score", 0),
+                                        "payload": item.get("raw_payload", {}),
+                                        "type": item.get("type", "text"),
+                                        "source": item.get("source", "Unknown"),
+                                        "disaster_type": item.get("disaster", "Unknown"),
+                                        "content_preview": item.get("text_content") or item.get("content") or item.get("transcript") or ""
+                                    }
+                                    if not any(e["source"] == item["source"] for e in collected_evidence):
+                                        collected_evidence.append(item_formatted)
+                        else:
+                            print(f"   ⚠️ Unknown tool in plan: {step.tool}")
+                    except Exception as e:
+                        print(f"   ⚠️ Tool Execution Error: {e}")
+                status.update(label="✅ Plan Executed", state="complete", expanded=False)
+        else:
+            # No plan (Simple query)
+            pass
 
+        # 3. SYNTHESIS (ANALYST AGENT)
+        # Format evidence for prompt
+        evidence_str = ""
+        for i, item in enumerate(collected_evidence, 1):
+            evidence_str += f"[Evidence {i}: {item['source']}] ({item['type'].upper()}) - {item['disaster_type']}: {item['content_preview']}\n"
+        
+        if not evidence_str:
+            evidence_str = "No specific evidence found."
+            
+        AGENT_SYSTEM_PROMPT = f"""You are the Aegis Analyst Agent.
+        
+        CONTEXT FROM PAST TURNS:
+        {context_str}
+        
+        EVIDENCE RETRIEVED:
+        {evidence_str}
+        
+        INSTRUCTIONS:
+        1. Answer the user's query based PRIMARILY on the Evidence Retrieved.
+        2. If evidence is empty, answer conversationally or say you don't know.
+        3. CITE SOURCES: If you use evidence, refer to it by filename (e.g. [video.mp4]).
+        4. SAFETY WARNING: Start with "⚠️ WARNING:" if threats are detected.
+        """
+        
+        full_prompt = f"QUERY: {query}"
+        
         response_text = llm_manager.chat_completion(
             messages=[
-                {"role": "system", "content": sys_prompt},
+                {"role": "system", "content": AGENT_SYSTEM_PROMPT},
                 {"role": "user", "content": full_prompt}
             ],
-            temperature=0.3, max_tokens=150
+            temperature=0.3
+        )
+
+        if not response_text:
+             response_text = "⚠️ Analysis failed."
+
+        # 4. CRITIC EVALUATION
+        evaluation = critic.evaluate(
+            query=query,
+            response=response_text,
+            evidence=collected_evidence
         )
         
-        # Log retrieval provenance
+        print(f"   🔍 Critic: {evaluation.status} (Confidence: {evaluation.confidence:.0%})")
+        
+        # Log to Critic Memory
+        try:
+             critic_memory.log_evaluation(
+                query=query,
+                response=response_text,
+                evaluation=evaluation.to_dict(),
+                evidence_count=len(collected_evidence),
+                final_status="shown"
+            )
+        except: pass
+        
+        # 5. UPDATE EPISODIC MEMORY
+        try:
+            if response_text and len(response_text) > 10:
+                summary_prompt = f"Summarize interaction in 1 sentence (Topic/Location/Action). Query: {query} Response: {response_text[:200]}"
+                summary = llm_manager.chat_completion([{"role": "user", "content": summary_prompt}], max_tokens=60)
+                if summary:
+                    episodic_memory.add_episode(query, response_text, summary)
+        except Exception as e:
+            pass
+
+        # Log Retrieval
         if logger:
+            evidence_points_for_log = [
+                {"id": e.get("id"), "score": e.get("score"), "source": e.get("source"), "content_preview": e.get("content_preview")}
+                for e in collected_evidence
+            ]
             logger.log_retrieval(
                 query=query,
-                retrieved_points=retrieved_points,
+                retrieved_points=evidence_points_for_log,
                 llm_prompt=full_prompt,
-                llm_response=response_text
+                llm_response=response_text,
+                critic_evaluation=evaluation.to_dict()
             )
-        
-        return response_text, top_results
+            
+        return response_text, collected_evidence, evaluation
 
     except Exception as e:
-        return f"⚠️ System Error: {str(e)}", []
+        import traceback
+        traceback.print_exc()
+        return f"⚠️ System Error: {str(e)}", [], None
 
 
 # --- Tabs ---
@@ -474,8 +532,8 @@ with tab2:
     st.header("🔍 Semantic Search")
     query = st.text_input("Search the Warzone", placeholder="e.g., 'Bengaluru flood warning'")
     
-    # CLIP (Visual) scores are often lower (0.25-0.45) while BGE (Text/Audio) are higher (0.60-0.85)
-    search_threshold = 0.70
+    # Lowered threshold to match retrieval_tools.py
+    search_threshold = 0.30
     
     def generate_warning_summary(payload, data_type):
         """Generate 10-20 word warning from LLM."""
@@ -505,6 +563,7 @@ with tab2:
     if query:
         st.subheader("Results")
         all_results = []
+        raw_scores = []  # For logging
         
         # Extract keywords from query for filtering
         # Improved: Look for "in [location]" pattern or known city names
@@ -554,6 +613,7 @@ with tab2:
         if client.collection_exists(VISUAL_COLLECTION):
             vis_res = client.query_points(collection_name=VISUAL_COLLECTION, query=visual_q.tolist(), limit=10, with_payload=True)
             for hit in vis_res.points:
+                raw_scores.append({"collection": "visual", "score": hit.score, "source": hit.payload.get("source")})
                 if hit.score > search_threshold and matches_query_keywords(hit.payload):
                     all_results.append({"type": "🖼️ VISUAL", "hit": hit, "data_type": "visual", "score": hit.score})
         
@@ -562,6 +622,7 @@ with tab2:
         if client.collection_exists(AUDIO_COLLECTION):
             aud_res = client.query_points(collection_name=AUDIO_COLLECTION, query=text_q.tolist(), limit=10, with_payload=True)
             for hit in aud_res.points:
+                raw_scores.append({"collection": "audio", "score": hit.score, "source": hit.payload.get("source")})
                 if hit.score > search_threshold and matches_query_keywords(hit.payload):
                     all_results.append({"type": "🎙️ AUDIO", "hit": hit, "data_type": "audio", "score": hit.score})
         
@@ -569,14 +630,33 @@ with tab2:
         if client.collection_exists(TACTICAL_COLLECTION):
             tac_res = client.query_points(collection_name=TACTICAL_COLLECTION, query=text_q.tolist(), limit=10, with_payload=True)
             for hit in tac_res.points:
+                raw_scores.append({"collection": "tactical", "score": hit.score, "source": hit.payload.get("source")})
                 if hit.score > search_threshold and matches_query_keywords(hit.payload):
                     all_results.append({"type": "📄 TEXT", "hit": hit, "data_type": "text", "score": hit.score})
         
         # Sort by score
         all_results.sort(key=lambda x: x["score"], reverse=True)
         
+        # LOG SEARCH RESULTS
+        try:
+            from retrieval_logger import get_retrieval_logger
+            logger = get_retrieval_logger()
+            if logger:
+                logger.log_retrieval(
+                    query=f"[SEMANTIC_SEARCH] {query}",
+                    retrieved_points=[{"collection": s["collection"], "score": round(s["score"], 3), "source": s["source"]} for s in raw_scores[:10]],
+                    llm_prompt=f"threshold={search_threshold}, keywords={required_keywords}",
+                    llm_response=f"Found {len(all_results)} results after filtering",
+                    critic_evaluation={"status": "semantic_search", "confidence": len(all_results)/10}
+                )
+        except Exception as e:
+            print(f"Search logging error: {e}")
+        
         if not all_results:
-            st.warning("No results found. Try different keywords.")
+            st.warning(f"No results found. Try different keywords. (Threshold: {search_threshold})")
+            # Show raw scores for debugging
+            with st.expander("🔧 Debug: Raw Scores"):
+                st.json(raw_scores[:5])
         else:
             st.success(f"Found {len(all_results)} matches across all sources")
             
@@ -693,14 +773,30 @@ with tab5:
             st.write(prompt)
             
         with st.chat_message("assistant"):
-            with st.spinner("Analyst is correlating data..."):
-                # Update System Prompt for Analyst Persona
-                # Note: get_rag_response uses the internal prompt, we should update it there or pass it in.
-                # For now, we rely on the internal prompt being updated or we update the function below.
-                response_text, media_items = get_rag_response(prompt)
+            with st.spinner("Analyst is correlating data... 🔍 Critic is reviewing..."):
+                # Get response with Critic evaluation
+                response_text, media_items, evaluation = get_rag_response(prompt)
+                
+                # Display Critic Confidence Badge
+                if evaluation:
+                    confidence = evaluation.confidence
+                    if confidence >= 0.75:
+                        st.success(f"✅ **Verified Response** | Confidence: {confidence:.0%}")
+                    elif confidence >= 0.5:
+                        st.warning(f"⚠️ **Limited Data** | Confidence: {confidence:.0%}")
+                    else:
+                        st.error(f"🔍 **Unverified** | Confidence: {confidence:.0%} - Proceed with caution")
+                    
+                    # Show if response was improved by Critic
+                    if hasattr(evaluation, 'issues') and evaluation.issues:
+                        with st.expander("📋 Critic Notes", expanded=False):
+                            st.caption(f"Status: {evaluation.status}")
+                            if evaluation.issues:
+                                st.caption(f"Issues addressed: {', '.join(evaluation.issues[:2])}")
+                
                 st.write(response_text)
                 
-                # Render content
+                # Render evidence content
                 for item in media_items:
                     p = item['payload']
                     m_type = item['type']
@@ -731,4 +827,11 @@ with tab5:
                             st.warning(f"⚠️ Audio not found: {src}")
                         st.write(f" Transcript: {p.get('transcript')}")
         
-        st.session_state.messages.append({"role": "assistant", "content": response_text, "data": media_items})
+        # Store in session with evaluation data
+        st.session_state.messages.append({
+            "role": "assistant", 
+            "content": response_text, 
+            "data": media_items,
+            "evaluation": evaluation.to_dict() if evaluation else None
+        })
+

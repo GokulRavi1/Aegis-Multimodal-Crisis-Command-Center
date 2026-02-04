@@ -55,7 +55,7 @@ Run all agents to start "listening" to their respective inboxes:
 *   **Terminal 4**: `python text_agent.py` (Text/Social)
 
 ### Phase 2: Intelligence & Cleanup
-*   **Terminal 5**: `python analyst_agent.py` (Geospatial correlation & alert logging)
+*   **Terminal 5**: `python analyst_agent.py` (Autonomous Verification Agent - Cross-checks visual hazards with audio intel)
 *   **Terminal 6**: `python memory_manager.py` (Safe Collection Verify) — *Optional, agents now self-check.*
 
 ### Phase 3: Launch Dashboard

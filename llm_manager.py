@@ -51,15 +51,50 @@ class LLMManager:
                 
             except RateLimitError as e:
                 print(f"   ⚠️ Rate Limit hit for {model}. Switching to backup...")
-                continue # Try next model
-                
+                time.sleep(1)
+                continue
             except APIError as e:
                 print(f"   ⚠️ API Error with {model}: {e}")
-                continue # Try next model
+                time.sleep(1)
+                continue
                 
             except Exception as e:
                 print(f"   ❌ Unexpected LLM Error ({model}): {e}")
                 break # Stop on non-API errors (like network/auth)
+                
+        print("   ❌ All LLM models exhausted or failed.")
+        return None
+
+    def tool_chat_completion(self, messages, tools=None, tool_choice="auto", temperature=0.7):
+        """
+        Get a chat completion with tool calling support.
+        Returns the full message object (content + tool_calls).
+        """
+        if not self.client:
+            return None
+            
+        for model in self.MODELS:
+            try:
+                completion = self.client.chat.completions.create(
+                    model=model,
+                    messages=messages,
+                    temperature=temperature,
+                    tools=tools,
+                    tool_choice=tool_choice
+                )
+                return completion.choices[0].message
+                
+            except RateLimitError as e:
+                print(f"   ⚠️ Rate Limit hit for {model}. Switching to backup...")
+                time.sleep(1)
+                continue
+            except APIError as e:
+                print(f"   ⚠️ API Error with {model}: {e}")
+                time.sleep(1)
+                continue
+            except Exception as e:
+                print(f"   ❌ Unexpected LLM Error ({model}): {e}")
+                break
                 
         print("   ❌ All LLM models exhausted or failed.")
         return None

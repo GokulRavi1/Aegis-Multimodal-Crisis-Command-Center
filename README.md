@@ -12,17 +12,20 @@
 *   **🎙️ Listener Agent (`listener_agent.py`)**: Transcribes radio/audio logs with automated MP3-to-WAV conversion and geocoding.
 *   **📄 Text Agent (`text_agent.py`)**: Ingests social media snippets and tactical SITREPs.
 
-### 2. Intelligent Core
+### 2. Intelligent Core (Advanced Agentic Framework)
+*   **🧠 Strategic Retrieval & Tool Use**: Agents actively *choose* when to search vs. answer directly. Includes the **Explicit Planner Agent** (`planner_agent.py`) for decomposing complex multi-step queries.
+*   **🔍 Critic Agent (`critic_agent.py`)**: Self-correction module that checks for hallucinations, verifies citations, and enforces safety warnings.
+*   **⏳ Episodic Memory (`episodic_memory.py`)**: Stores interaction summaries to enable contextual recall (e.g., resolving "Is *it* safe there?" based on previous turns).
+*   **🛡️ Autonomous Verification (`analyst_agent.py`)**: Background agent that autonomously cross-validates visual hazards with audio intelligence before issuing alerts.
 *   **Advanced Memory Manager (`memory_manager.py`)**: Centralized lifecycle for embeddings, including TTL-based eviction and confidence scoring.
-*   **Analyst Agent (RAG)**: An LLM-powered reasoning engine that provides evidence-grounded sitreps with explicit source citations.
 *   **Robust LLM Manager (`llm_manager.py`)**: Multi-model fallback system (Llama-3.3-70B → Mixtral → Llama-3.1-8B) to ensure 100% uptime even during rate limits.
 *   **Retrieval Provenance (`retrieval_logger.py`)**: Full traceability of every AI response, logging queries, retrieved evidence IDs, and confidence scores.
 
 ### 3. Command Dashboard
 *   **📍 Crisis Operational Map**: Real-time visualization of hazards, civilians, and field data.
-*   **🔍 Semantic Search**: Multi-modal search with high-precision keyword filtering (e.g., "Bengaluru flood" correctly isolates local results).
-*   **💬 Safety AI Chat**: Interactive "Safety First" Assistant that proactively warns users of threats found in the retrieved evidence.
-*   **⚡ Zero-Latency Alerts**: Pre-computed tactical summaries for sub-second dashboard updates.
+*   **🔍 Semantic Search**: Multi-modal search with high-precision keyword filtering.
+*   **💬 Safety AI Chat**: Agentic chat interface with **Confidence Badges** and "Plan Execution" visualization.
+*   **⚡ Zero-Latency Alerts**: Verified alerts from the Autonomous Analyst Agent.
 
 ---
 

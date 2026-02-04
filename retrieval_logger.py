@@ -40,7 +40,8 @@ class RetrievalLogger:
         llm_prompt: str,
         llm_response: str,
         model: str = "llama-3.3-70b-versatile",
-        session_id: Optional[str] = None
+        session_id: Optional[str] = None,
+        critic_evaluation: Optional[Dict] = None
     ) -> str:
         """
         Log a RAG retrieval operation.
@@ -52,6 +53,7 @@ class RetrievalLogger:
             llm_response: LLM's response
             model: Model name used
             session_id: Optional session identifier
+            critic_evaluation: Optional Critic Agent evaluation result
         
         Returns:
             Log entry ID
@@ -68,7 +70,12 @@ class RetrievalLogger:
             "llm_model": model,
             "llm_prompt_length": len(llm_prompt),
             "llm_response": llm_response,
-            "citations": self._extract_citations(llm_response, retrieved_points)
+            "citations": self._extract_citations(llm_response, retrieved_points),
+            # Critic Agent fields
+            "critic_status": critic_evaluation.get("status") if critic_evaluation else None,
+            "critic_confidence": critic_evaluation.get("confidence") if critic_evaluation else None,
+            "critic_issues": critic_evaluation.get("issues", []) if critic_evaluation else [],
+            "critic_feedback": critic_evaluation.get("feedback") if critic_evaluation else None
         }
         
         self.logs.append(entry)

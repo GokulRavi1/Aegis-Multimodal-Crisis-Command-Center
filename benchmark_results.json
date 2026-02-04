@@ -1,21 +1,15 @@
 {
-  "timestamp": "2026-01-21T11:24:44.094531",
+  "timestamp": "2026-02-04T19:23:07.324437",
   "num_queries": 5,
   "k": 5,
-  "avg_latency_ms": 2516.78,
-  "avg_precision_at_k": 0.32,
+  "avg_latency_ms": 4217.84,
+  "avg_precision_at_k": 0.16,
   "results": [
     {
       "query": "flood in Chennai",
-      "latency_ms": 3473.48,
-      "total_hits": 11,
+      "latency_ms": 6902.06,
+      "total_hits": 8,
       "top_k": [
-        {
-          "score": 0.8224808,
-          "disaster": "river overflow",
-          "location": "Chennai Corporation, Chennai, Tamil Nadu, India",
-          "source": "Chennai Flood 2023_ Chennai Locals Describe Surviving Cyclone Michaung.mp4"
-        },
         {
           "score": 0.8119561,
           "disaster": "flood",
@@ -23,33 +17,39 @@
           "source": "NoteGPT_Speech_1768910627236.wav"
         },
         {
-          "score": 0.73050463,
-          "disaster": "flooded street",
-          "location": "India",
-          "source": "Chennai Flood 2023_ Chennai Locals Describe Surviving Cyclone Michaung.mp4"
-        },
-        {
-          "score": 0.728866,
-          "disaster": "flash flood",
-          "location": "Thiruvanmiyur, Zone 13 Adyar, Chennai Corporation, Chennai, Tamil Nadu, 600041, India",
-          "source": "Chennai Flood 2023_ Chennai Locals Describe Surviving Cyclone Michaung.mp4"
-        },
-        {
           "score": 0.7018163,
           "disaster": "flood",
           "location": "Bengaluru, Bangalore North, Bengaluru Urban, Karnataka, India",
           "source": "Bengaluru has increasingly faced ur.txt"
+        },
+        {
+          "score": 0.64004946,
+          "disaster": "collapsed building",
+          "location": "Kochi, Ernakulam, Kerala, 682001, India",
+          "source": "ChatGPT Image Jan 20, 2026, 03_47_11 PM.png"
+        },
+        {
+          "score": 0.35194218,
+          "disaster": "flooded street",
+          "location": "",
+          "source": "Chennai Flood 2023_ Chennai Locals Describe Surviving Cyclone Michaung.mp4"
+        },
+        {
+          "score": 0.34079143,
+          "disaster": "flooded street",
+          "location": "",
+          "source": "Chennai Flood 2023_ Chennai Locals Describe Surviving Cyclone Michaung.mp4"
         }
       ],
       "expected_disaster": "flood",
       "expected_location": "chennai",
-      "relevant_count": 2,
-      "precision_at_k": 0.4
+      "relevant_count": 1,
+      "precision_at_k": 0.2
     },
     {
       "query": "Bengaluru urban flooding",
-      "latency_ms": 2757.21,
-      "total_hits": 11,
+      "latency_ms": 2887.86,
+      "total_hits": 8,
       "top_k": [
         {
           "score": 0.86737114,
@@ -58,25 +58,25 @@
           "source": "Bengaluru has increasingly faced ur.txt"
         },
         {
-          "score": 0.73446083,
-          "disaster": "flooded street",
-          "location": "India",
-          "source": "Chennai Flood 2023_ Chennai Locals Describe Surviving Cyclone Michaung.mp4"
+          "score": 0.699407,
+          "disaster": "flood",
+          "location": "Chennai Corporation, Chennai, Tamil Nadu, India",
+          "source": "NoteGPT_Speech_1768910627236.wav"
         },
         {
-          "score": 0.7294451,
+          "score": 0.61713415,
+          "disaster": "collapsed building",
+          "location": "Kochi, Ernakulam, Kerala, 682001, India",
+          "source": "ChatGPT Image Jan 20, 2026, 03_47_11 PM.png"
+        },
+        {
+          "score": 0.36104092,
           "disaster": "flooded street",
           "location": "",
           "source": "Chennai Flood 2023_ Chennai Locals Describe Surviving Cyclone Michaung.mp4"
         },
         {
-          "score": 0.72472703,
-          "disaster": "flooded street",
-          "location": "",
-          "source": "Chennai Flood 2023_ Chennai Locals Describe Surviving Cyclone Michaung.mp4"
-        },
-        {
-          "score": 0.71263146,
+          "score": 0.35595363,
           "disaster": "flooded street",
           "location": "",
           "source": "Chennai Flood 2023_ Chennai Locals Describe Surviving Cyclone Michaung.mp4"
@@ -89,36 +89,36 @@
     },
     {
       "query": "cyclone warning Kerala",
-      "latency_ms": 1602.09,
-      "total_hits": 11,
+      "latency_ms": 2966.91,
+      "total_hits": 8,
       "top_k": [
         {
-          "score": 0.76421607,
+          "score": 0.75693977,
           "disaster": "collapsed building",
           "location": "Kochi, Ernakulam, Kerala, 682001, India",
           "source": "ChatGPT Image Jan 20, 2026, 03_47_11 PM.png"
         },
         {
-          "score": 0.74408686,
-          "disaster": "river overflow",
+          "score": 0.62936205,
+          "disaster": "flood",
+          "location": "Bengaluru, Bangalore North, Bengaluru Urban, Karnataka, India",
+          "source": "Bengaluru has increasingly faced ur.txt"
+        },
+        {
+          "score": 0.62777054,
+          "disaster": "flood",
           "location": "Chennai Corporation, Chennai, Tamil Nadu, India",
+          "source": "NoteGPT_Speech_1768910627236.wav"
+        },
+        {
+          "score": 0.30988336,
+          "disaster": "submerged car",
+          "location": "",
           "source": "Chennai Flood 2023_ Chennai Locals Describe Surviving Cyclone Michaung.mp4"
         },
         {
-          "score": 0.7036092,
-          "disaster": "flooded street",
-          "location": "India",
-          "source": "Chennai Flood 2023_ Chennai Locals Describe Surviving Cyclone Michaung.mp4"
-        },
-        {
-          "score": 0.69960827,
-          "disaster": "flash flood",
-          "location": "Thiruvanmiyur, Zone 13 Adyar, Chennai Corporation, Chennai, Tamil Nadu, 600041, India",
-          "source": "Chennai Flood 2023_ Chennai Locals Describe Surviving Cyclone Michaung.mp4"
-        },
-        {
-          "score": 0.69889164,
-          "disaster": "river overflow",
+          "score": 0.30972898,
+          "disaster": "collapsed building",
           "location": "",
           "source": "Chennai Flood 2023_ Chennai Locals Describe Surviving Cyclone Michaung.mp4"
         }
@@ -130,77 +130,77 @@
     },
     {
       "query": "bridge collapse emergency",
-      "latency_ms": 1676.32,
-      "total_hits": 11,
+      "latency_ms": 4617.81,
+      "total_hits": 8,
       "top_k": [
         {
-          "score": 0.7730292,
-          "disaster": "collapsed building",
-          "location": "",
-          "source": "Chennai Flood 2023_ Chennai Locals Describe Surviving Cyclone Michaung.mp4"
-        },
-        {
-          "score": 0.7623323,
+          "score": 0.7584636,
           "disaster": "collapsed building",
           "location": "Kochi, Ernakulam, Kerala, 682001, India",
           "source": "ChatGPT Image Jan 20, 2026, 03_47_11 PM.png"
         },
         {
-          "score": 0.7566693,
-          "disaster": "collapsed building",
-          "location": "",
-          "source": "Chennai Flood 2023_ Chennai Locals Describe Surviving Cyclone Michaung.mp4"
+          "score": 0.62370646,
+          "disaster": "flood",
+          "location": "Chennai Corporation, Chennai, Tamil Nadu, India",
+          "source": "NoteGPT_Speech_1768910627236.wav"
         },
         {
-          "score": 0.7546616,
-          "disaster": "collapsed building",
-          "location": "",
-          "source": "Chennai Flood 2023_ Chennai Locals Describe Surviving Cyclone Michaung.mp4"
+          "score": 0.5891388,
+          "disaster": "flood",
+          "location": "Bengaluru, Bangalore North, Bengaluru Urban, Karnataka, India",
+          "source": "Bengaluru has increasingly faced ur.txt"
         },
         {
-          "score": 0.7546616,
+          "score": 0.30091414,
           "disaster": "collapsed building",
+          "location": "Kochi, Ernakulam, Kerala, 682001, India",
+          "source": "ChatGPT Image Jan 20, 2026, 03_47_11 PM.png"
+        },
+        {
+          "score": 0.26811144,
+          "disaster": "hailstorm",
           "location": "",
           "source": "Chennai Flood 2023_ Chennai Locals Describe Surviving Cyclone Michaung.mp4"
         }
       ],
       "expected_disaster": "collapsed building",
       "expected_location": null,
-      "relevant_count": 5,
-      "precision_at_k": 1.0
+      "relevant_count": 2,
+      "precision_at_k": 0.4
     },
     {
       "query": "fire hazard alert",
-      "latency_ms": 3074.81,
-      "total_hits": 11,
+      "latency_ms": 3714.56,
+      "total_hits": 8,
       "top_k": [
         {
-          "score": 0.74541605,
-          "disaster": "person",
-          "location": "",
-          "source": "Chennai Flood 2023_ Chennai Locals Describe Surviving Cyclone Michaung.mp4"
-        },
-        {
-          "score": 0.7323513,
-          "disaster": "truck",
-          "location": "",
-          "source": "Chennai Flood 2023_ Chennai Locals Describe Surviving Cyclone Michaung.mp4"
-        },
-        {
-          "score": 0.7287135,
-          "disaster": "air pollution",
-          "location": "",
-          "source": "Chennai Flood 2023_ Chennai Locals Describe Surviving Cyclone Michaung.mp4"
-        },
-        {
-          "score": 0.7266055,
-          "disaster": "flood",
-          "location": "",
-          "source": "Chennai Flood 2023_ Chennai Locals Describe Surviving Cyclone Michaung.mp4"
-        },
-        {
-          "score": 0.7242974,
+          "score": 0.63320017,
           "disaster": "collapsed building",
+          "location": "Kochi, Ernakulam, Kerala, 682001, India",
+          "source": "ChatGPT Image Jan 20, 2026, 03_47_11 PM.png"
+        },
+        {
+          "score": 0.5647604,
+          "disaster": "flood",
+          "location": "Chennai Corporation, Chennai, Tamil Nadu, India",
+          "source": "NoteGPT_Speech_1768910627236.wav"
+        },
+        {
+          "score": 0.5248733,
+          "disaster": "flood",
+          "location": "Bengaluru, Bangalore North, Bengaluru Urban, Karnataka, India",
+          "source": "Bengaluru has increasingly faced ur.txt"
+        },
+        {
+          "score": 0.2514185,
+          "disaster": "collapsed building",
+          "location": "",
+          "source": "Chennai Flood 2023_ Chennai Locals Describe Surviving Cyclone Michaung.mp4"
+        },
+        {
+          "score": 0.24178927,
+          "disaster": "hailstorm",
           "location": "",
           "source": "Chennai Flood 2023_ Chennai Locals Describe Surviving Cyclone Michaung.mp4"
         }
