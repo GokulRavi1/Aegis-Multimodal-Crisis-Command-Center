@@ -336,6 +336,7 @@ class ImageHandler(FileSystemEventHandler):
 
         # Prepare Payload
         payload = {
+            "agent": "image_agent",  # Attribution for hackathon
             "source": os.path.basename(image_path),
             "type": "image",
             "detected_disaster": primary_disaster,

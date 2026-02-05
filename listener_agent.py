@@ -158,6 +158,7 @@ class AudioHandler(FileSystemEventHandler):
 
             # Upsert
             payload = {
+                "agent": "listener_agent",  # Attribution for hackathon
                 "source": os.path.basename(file_path),
                 "type": "audio",
                 "detected_disaster": detected_disaster,

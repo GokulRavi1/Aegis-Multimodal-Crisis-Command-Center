@@ -205,22 +205,18 @@ except Exception as e:
     st.sidebar.warning(f"Alert feed error: {e}")
 
 # --- RAG Logic for Chat with Strategic Retrieval (Tool Use) ---
-# --- RAG Logic for Chat with Strategic Retrieval (Tool Use) ---
 # --- RAG Logic for Chat with Planner Agent ---
 def get_rag_response(query):
     """
     Generate a response using Explicit Planner + Strategic Retrieval + Critic + Episodic Memory.
     
-    Flow:
-    1. Retrieve Episodic Context.
-    2. Planner Agent: Decomposes query into retrieval steps.
-    3. Execution: Runs retrieval tools (Visual/Audio/Tactical).
-    4. Synthesis: Analyst LLM generates final answer from evidence.
-    5. Critic: Verifies quality.
+    Returns: (response_text, media_items, evaluation, agent_logs)
     """
+    agent_logs = []  # NEW: Collect agent brain logs for UI display
+    
     groq_key = os.getenv("GROQ_API_KEY")
     if not groq_key:
-        return "⚠️ Error: Groq API Key not found.", [], None
+        return "⚠️ Error: Groq API Key not found.", [], None, []
 
     try:
         # Import retrieval logger
@@ -234,22 +230,35 @@ def get_rag_response(query):
         critic = get_critic_agent()
         critic_memory = get_critic_memory()
         episodic_memory = get_episodic_memory()
-        planner = get_planner_agent() # NEW
+        planner = get_planner_agent()
         toolkit = RetrievalToolkit(client, text_model, clip_text_model)
         llm_manager = get_llm_manager()
         
         if not llm_manager:
-            return "⚠️ LLM Service Unavailable.", [], None
+            return "⚠️ LLM Service Unavailable.", [], None, []
 
         # 1. RETRIEVE EPISODIC CONTEXT
         past_context = episodic_memory.retrieve_context(query)
         context_str = "\n- ".join(past_context) if past_context else "No prior context."
+        
+        # LOG: Episodic Memory
+        if past_context:
+            agent_logs.append(f"🧠 **Episodic Memory**: Retrieved {len(past_context)} past context(s)")
+            for i, ctx in enumerate(past_context[:2], 1):
+                agent_logs.append(f"   └─ Context {i}: \"{ctx[:60]}...\"")
+        else:
+            agent_logs.append("🧠 **Episodic Memory**: No prior context found")
         
         # 2. CREATE AND EXECUTE PLAN
         collected_evidence = []
         plan_steps = planner.create_plan(query, context=context_str)
         
         if plan_steps:
+            # LOG: Planner decisions
+            agent_logs.append(f"📋 **Planner Agent**: Created plan with {len(plan_steps)} step(s)")
+            for i, step in enumerate(plan_steps, 1):
+                agent_logs.append(f"   └─ Step {i}: Use `{step.tool}` for \"{step.query[:40]}...\"")
+            
             with st.status("🏗️ Executing Plan...", expanded=True) as status:
                 for step in plan_steps:
                     st.write(f"🔹 {step.tool}: {step.query}")
@@ -260,6 +269,12 @@ def get_rag_response(query):
                             result_data = tool_func(step.query)
                             
                             if "result" in result_data and isinstance(result_data["result"], list):
+                                results_count = len(result_data["result"])
+                                avg_score = sum(r.get("score", 0) for r in result_data["result"]) / max(1, results_count)
+                                
+                                # LOG: Toolkit results
+                                agent_logs.append(f"🔧 **Toolkit** ({step.tool}): Found {results_count} result(s) (Avg Score: {avg_score:.2f})")
+                                
                                 for item in result_data["result"]:
                                     item_formatted = {
                                         "id": item.get("source", "unknown"),
@@ -272,14 +287,16 @@ def get_rag_response(query):
                                     }
                                     if not any(e["source"] == item["source"] for e in collected_evidence):
                                         collected_evidence.append(item_formatted)
+                            else:
+                                agent_logs.append(f"🔧 **Toolkit** ({step.tool}): No results found")
                         else:
-                            print(f"   ⚠️ Unknown tool in plan: {step.tool}")
+                            agent_logs.append(f"⚠️ **Unknown tool**: {step.tool}")
                     except Exception as e:
-                        print(f"   ⚠️ Tool Execution Error: {e}")
+                        agent_logs.append(f"⚠️ **Tool Error**: {str(e)[:50]}")
                 status.update(label="✅ Plan Executed", state="complete", expanded=False)
         else:
             # No plan (Simple query)
-            pass
+            agent_logs.append("📋 **Planner Agent**: No retrieval needed (simple query)")
 
         # 3. SYNTHESIS (ANALYST AGENT)
         # Format evidence for prompt
@@ -325,6 +342,11 @@ def get_rag_response(query):
             evidence=collected_evidence
         )
         
+        # LOG: Critic
+        agent_logs.append(f"🧐 **Critic Agent**: Status `{evaluation.status}` (Confidence: {evaluation.confidence:.0%})")
+        if evaluation.issues:
+            agent_logs.append(f"   ⚠️ Issues: {', '.join(evaluation.issues)}")
+            
         print(f"   🔍 Critic: {evaluation.status} (Confidence: {evaluation.confidence:.0%})")
         
         # Log to Critic Memory
@@ -345,6 +367,7 @@ def get_rag_response(query):
                 summary = llm_manager.chat_completion([{"role": "user", "content": summary_prompt}], max_tokens=60)
                 if summary:
                     episodic_memory.add_episode(query, response_text, summary)
+                    agent_logs.append(f"💾 **Episodic Memory**: Saved interaction summary")
         except Exception as e:
             pass
 
@@ -362,7 +385,7 @@ def get_rag_response(query):
                 critic_evaluation=evaluation.to_dict()
             )
             
-        return response_text, collected_evidence, evaluation
+        return response_text, collected_evidence, evaluation, agent_logs
 
     except Exception as e:
         import traceback
@@ -775,7 +798,13 @@ with tab5:
         with st.chat_message("assistant"):
             with st.spinner("Analyst is correlating data... 🔍 Critic is reviewing..."):
                 # Get response with Critic evaluation
-                response_text, media_items, evaluation = get_rag_response(prompt)
+                response_text, media_items, evaluation, agent_logs = get_rag_response(prompt)
+                
+                # --- AGENT BRAIN LOGS (Hackathon Feature) ---
+                if agent_logs:
+                    with st.expander("🧠 Agent Brain (System Log)", expanded=False):
+                        for log in agent_logs:
+                            st.markdown(f"- {log}")
                 
                 # Display Critic Confidence Badge
                 if evaluation:

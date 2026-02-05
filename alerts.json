@@ -1,7 +1,7 @@
 [
   {
-    "timestamp": "2026-02-05T08:29:45.958659+00:00",
-    "msg": "CONFIRMED THREAT: submerged car at {'lat': 28.7041, 'lon': 77.1025}.",
+    "timestamp": "2026-02-05T10:42:56.674356+00:00",
+    "msg": "CONFIRMED THREAT: river overflow at {'lat': 28.7041, 'lon': 77.1025}.",
     "source": "Analyst Agent (Verified)",
     "location": {
       "lat": 28.7041,
@@ -9,12 +9,23 @@
     }
   },
   {
-    "timestamp": "2026-02-05T08:29:44.152401+00:00",
-    "msg": "CONFIRMED THREAT: flooded street at {'lat': 28.7041, 'lon': 77.1025}.",
+    "timestamp": "2026-02-05T10:42:21.915298+00:00",
+    "msg": "CONFIRMED THREAT: infrastructure collapse at {'lat': 9.9679032, 'lon': 76.2444378, 'name': 'Kochi, Ernakulam, Kerala, 682001, India'}.",
     "source": "Analyst Agent (Verified)",
     "location": {
-      "lat": 28.7041,
-      "lon": 77.1025
+      "lat": 9.9679032,
+      "lon": 76.2444378,
+      "name": "Kochi, Ernakulam, Kerala, 682001, India"
+    }
+  },
+  {
+    "timestamp": "2026-02-05T10:41:57.799163+00:00",
+    "msg": "CONFIRMED THREAT: urban flooding at {'lat': 10.0256394, 'lon': 76.4033185, 'name': 'Pallikkara, Kunnathunad, Ernakulam, Kerala, 683565, India'}.",
+    "source": "Analyst Agent (Verified)",
+    "location": {
+      "lat": 10.0256394,
+      "lon": 76.4033185,
+      "name": "Pallikkara, Kunnathunad, Ernakulam, Kerala, 683565, India"
     }
   }
 ]

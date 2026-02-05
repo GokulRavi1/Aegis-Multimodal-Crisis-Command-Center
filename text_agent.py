@@ -123,6 +123,7 @@ class TextHandler(FileSystemEventHandler):
                 alerts.append(f"📍 Location: {detected_location.get('name', 'Unknown')}")
 
             payload = {
+                "agent": "text_agent",  # Attribution for hackathon
                 "source": os.path.basename(file_path),
                 "type": "text",
                 "detected_disaster": detected_disaster,

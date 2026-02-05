@@ -231,6 +231,7 @@ class VideoHandler(FileSystemEventHandler):
                 continue  # Don't index this frame
 
             payload = {
+                "agent": "watcher_agent",  # Attribution for hackathon
                 "source": os.path.basename(video_path),
                 "type": "visual",
                 "detected_disaster": primary_disaster,
