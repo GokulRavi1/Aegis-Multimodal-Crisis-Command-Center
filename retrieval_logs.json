@@ -1,261 +1,296 @@
 [
   {
-    "id": "log_1770213102329",
-    "timestamp": "2026-02-04T13:51:42.329406+00:00",
-    "query": "is there any thing happening kochi kerala near me ?",
+    "id": "log_1770280656610",
+    "timestamp": "2026-02-05T08:37:36.610338+00:00",
+    "query": "[SEMANTIC_SEARCH] car",
     "session_id": null,
-    "retrieved_points": [],
-    "retrieval_count": 0,
-    "llm_model": "llama-3.3-70b-versatile",
-    "llm_prompt_length": 58,
-    "llm_response": "I don't have any specific information about events or happenings in Kochi, Kerala near your location. The evidence retrieved is empty, and I couldn't find any relevant data. If you're looking for local news or events, I recommend checking online news sources or social media platforms for updates.",
-    "citations": [],
-    "critic_status": "needs_research",
-    "critic_confidence": 0.2,
-    "critic_issues": [
-      "No evidence retrieved"
+    "retrieved_points": [
+      {
+        "collection": "visual",
+        "score": 0.236,
+        "source": "Chennai Flood 2023_ Chennai Locals Describe Surviving Cyclone Michaung.mp4"
+      },
+      {
+        "collection": "visual",
+        "score": 0.23,
+        "source": "Chennai Flood 2023_ Chennai Locals Describe Surviving Cyclone Michaung.mp4"
+      },
+      {
+        "collection": "visual",
+        "score": 0.229,
+        "source": "Chennai Flood 2023_ Chennai Locals Describe Surviving Cyclone Michaung.mp4"
+      },
+      {
+        "collection": "visual",
+        "score": 0.222,
+        "source": "Chennai Flood 2023_ Chennai Locals Describe Surviving Cyclone Michaung.mp4"
+      },
+      {
+        "collection": "visual",
+        "score": 0.221,
+        "source": "Chennai Flood 2023_ Chennai Locals Describe Surviving Cyclone Michaung.mp4"
+      },
+      {
+        "collection": "visual",
+        "score": 0.22,
+        "source": "Chennai Flood 2023_ Chennai Locals Describe Surviving Cyclone Michaung.mp4"
+      },
+      {
+        "collection": "visual",
+        "score": 0.22,
+        "source": "Chennai Flood 2023_ Chennai Locals Describe Surviving Cyclone Michaung.mp4"
+      },
+      {
+        "collection": "visual",
+        "score": 0.218,
+        "source": "Chennai Flood 2023_ Chennai Locals Describe Surviving Cyclone Michaung.mp4"
+      },
+      {
+        "collection": "visual",
+        "score": 0.217,
+        "source": "Chennai Flood 2023_ Chennai Locals Describe Surviving Cyclone Michaung.mp4"
+      },
+      {
+        "collection": "visual",
+        "score": 0.214,
+        "source": "Chennai Flood 2023_ Chennai Locals Describe Surviving Cyclone Michaung.mp4"
+      }
     ],
-    "critic_feedback": "No evidence available to verify the response."
+    "retrieval_count": 10,
+    "llm_model": "llama-3.3-70b-versatile",
+    "llm_prompt_length": 26,
+    "llm_response": "Found 2 results after filtering",
+    "citations": [
+      {
+        "point_id": null,
+        "source": "Chennai Flood 2023_ Chennai Locals Describe Surviving Cyclone Michaung.mp4",
+        "score": 0.236
+      },
+      {
+        "point_id": null,
+        "source": "Chennai Flood 2023_ Chennai Locals Describe Surviving Cyclone Michaung.mp4",
+        "score": 0.23
+      },
+      {
+        "point_id": null,
+        "source": "Chennai Flood 2023_ Chennai Locals Describe Surviving Cyclone Michaung.mp4",
+        "score": 0.229
+      },
+      {
+        "point_id": null,
+        "source": "Chennai Flood 2023_ Chennai Locals Describe Surviving Cyclone Michaung.mp4",
+        "score": 0.222
+      },
+      {
+        "point_id": null,
+        "source": "Chennai Flood 2023_ Chennai Locals Describe Surviving Cyclone Michaung.mp4",
+        "score": 0.221
+      },
+      {
+        "point_id": null,
+        "source": "Chennai Flood 2023_ Chennai Locals Describe Surviving Cyclone Michaung.mp4",
+        "score": 0.22
+      },
+      {
+        "point_id": null,
+        "source": "Chennai Flood 2023_ Chennai Locals Describe Surviving Cyclone Michaung.mp4",
+        "score": 0.22
+      },
+      {
+        "point_id": null,
+        "source": "Chennai Flood 2023_ Chennai Locals Describe Surviving Cyclone Michaung.mp4",
+        "score": 0.218
+      },
+      {
+        "point_id": null,
+        "source": "Chennai Flood 2023_ Chennai Locals Describe Surviving Cyclone Michaung.mp4",
+        "score": 0.217
+      },
+      {
+        "point_id": null,
+        "source": "Chennai Flood 2023_ Chennai Locals Describe Surviving Cyclone Michaung.mp4",
+        "score": 0.214
+      }
+    ],
+    "critic_status": "semantic_search",
+    "critic_confidence": 0.2,
+    "critic_issues": [],
+    "critic_feedback": null
   },
   {
-    "id": "log_1770213139705",
-    "timestamp": "2026-02-04T13:52:19.705612+00:00",
-    "query": "is there any thing happening kochi kerala ",
+    "id": "log_1770280682415",
+    "timestamp": "2026-02-05T08:38:02.415782+00:00",
+    "query": "[SEMANTIC_SEARCH] car",
     "session_id": null,
-    "retrieved_points": [],
-    "retrieval_count": 0,
-    "llm_model": "llama-3.3-70b-versatile",
-    "llm_prompt_length": 49,
-    "llm_response": "I don't know. There is no available information about any events or happenings in Kochi, Kerala, near your location.",
-    "citations": [],
-    "critic_status": "needs_research",
-    "critic_confidence": 0.2,
-    "critic_issues": [
-      "No evidence retrieved"
+    "retrieved_points": [
+      {
+        "collection": "visual",
+        "score": 0.236,
+        "source": "Chennai Flood 2023_ Chennai Locals Describe Surviving Cyclone Michaung.mp4"
+      },
+      {
+        "collection": "visual",
+        "score": 0.23,
+        "source": "Chennai Flood 2023_ Chennai Locals Describe Surviving Cyclone Michaung.mp4"
+      },
+      {
+        "collection": "visual",
+        "score": 0.229,
+        "source": "Chennai Flood 2023_ Chennai Locals Describe Surviving Cyclone Michaung.mp4"
+      },
+      {
+        "collection": "visual",
+        "score": 0.222,
+        "source": "Chennai Flood 2023_ Chennai Locals Describe Surviving Cyclone Michaung.mp4"
+      },
+      {
+        "collection": "visual",
+        "score": 0.221,
+        "source": "Chennai Flood 2023_ Chennai Locals Describe Surviving Cyclone Michaung.mp4"
+      },
+      {
+        "collection": "visual",
+        "score": 0.22,
+        "source": "Chennai Flood 2023_ Chennai Locals Describe Surviving Cyclone Michaung.mp4"
+      },
+      {
+        "collection": "visual",
+        "score": 0.22,
+        "source": "Chennai Flood 2023_ Chennai Locals Describe Surviving Cyclone Michaung.mp4"
+      },
+      {
+        "collection": "visual",
+        "score": 0.218,
+        "source": "Chennai Flood 2023_ Chennai Locals Describe Surviving Cyclone Michaung.mp4"
+      },
+      {
+        "collection": "visual",
+        "score": 0.217,
+        "source": "Chennai Flood 2023_ Chennai Locals Describe Surviving Cyclone Michaung.mp4"
+      },
+      {
+        "collection": "visual",
+        "score": 0.214,
+        "source": "Chennai Flood 2023_ Chennai Locals Describe Surviving Cyclone Michaung.mp4"
+      }
     ],
-    "critic_feedback": "No evidence available to verify the response."
+    "retrieval_count": 10,
+    "llm_model": "llama-3.3-70b-versatile",
+    "llm_prompt_length": 26,
+    "llm_response": "Found 2 results after filtering",
+    "citations": [
+      {
+        "point_id": null,
+        "source": "Chennai Flood 2023_ Chennai Locals Describe Surviving Cyclone Michaung.mp4",
+        "score": 0.236
+      },
+      {
+        "point_id": null,
+        "source": "Chennai Flood 2023_ Chennai Locals Describe Surviving Cyclone Michaung.mp4",
+        "score": 0.23
+      },
+      {
+        "point_id": null,
+        "source": "Chennai Flood 2023_ Chennai Locals Describe Surviving Cyclone Michaung.mp4",
+        "score": 0.229
+      },
+      {
+        "point_id": null,
+        "source": "Chennai Flood 2023_ Chennai Locals Describe Surviving Cyclone Michaung.mp4",
+        "score": 0.222
+      },
+      {
+        "point_id": null,
+        "source": "Chennai Flood 2023_ Chennai Locals Describe Surviving Cyclone Michaung.mp4",
+        "score": 0.221
+      },
+      {
+        "point_id": null,
+        "source": "Chennai Flood 2023_ Chennai Locals Describe Surviving Cyclone Michaung.mp4",
+        "score": 0.22
+      },
+      {
+        "point_id": null,
+        "source": "Chennai Flood 2023_ Chennai Locals Describe Surviving Cyclone Michaung.mp4",
+        "score": 0.22
+      },
+      {
+        "point_id": null,
+        "source": "Chennai Flood 2023_ Chennai Locals Describe Surviving Cyclone Michaung.mp4",
+        "score": 0.218
+      },
+      {
+        "point_id": null,
+        "source": "Chennai Flood 2023_ Chennai Locals Describe Surviving Cyclone Michaung.mp4",
+        "score": 0.217
+      },
+      {
+        "point_id": null,
+        "source": "Chennai Flood 2023_ Chennai Locals Describe Surviving Cyclone Michaung.mp4",
+        "score": 0.214
+      }
+    ],
+    "critic_status": "semantic_search",
+    "critic_confidence": 0.2,
+    "critic_issues": [],
+    "critic_feedback": null
   },
   {
-    "id": "log_1770213204703",
-    "timestamp": "2026-02-04T13:53:24.703838+00:00",
-    "query": "kochi kerala colapsing buliding ",
-    "session_id": null,
-    "retrieved_points": [],
-    "retrieval_count": 0,
-    "llm_model": "llama-3.3-70b-versatile",
-    "llm_prompt_length": 39,
-    "llm_response": "I don't know about any collapsing building in Kochi, Kerala. The Evidence Retrieved is empty, and I don't have any information about a specific incident. If you're looking for updates on a recent event, I recommend checking news sources or official reports for the latest information.",
-    "citations": [],
-    "critic_status": "needs_research",
-    "critic_confidence": 0.2,
-    "critic_issues": [
-      "No evidence retrieved"
-    ],
-    "critic_feedback": "No evidence available to verify the response."
-  },
-  {
-    "id": "log_1770213293783",
-    "timestamp": "2026-02-04T13:54:53.783016+00:00",
-    "query": "flood in chennai?",
-    "session_id": null,
-    "retrieved_points": [],
-    "retrieval_count": 0,
-    "llm_model": "llama-3.3-70b-versatile",
-    "llm_prompt_length": 24,
-    "llm_response": "I don't know about any current flood situation in Chennai. The last information I had was when you inquired about flood levels in Chennai, but I don't have any updates or evidence regarding a flood in Chennai at this time.",
-    "citations": [],
-    "critic_status": "needs_research",
-    "critic_confidence": 0.2,
-    "critic_issues": [
-      "No evidence retrieved"
-    ],
-    "critic_feedback": "No evidence available to verify the response."
-  },
-  {
-    "id": "log_1770213468202",
-    "timestamp": "2026-02-04T13:57:48.202069+00:00",
-    "query": "is there any thing happening kochi kerala near me ?",
-    "session_id": null,
-    "retrieved_points": [],
-    "retrieval_count": 0,
-    "llm_model": "llama-3.3-70b-versatile",
-    "llm_prompt_length": 58,
-    "llm_response": "I don't know. There is no available information about any events or happenings currently taking place in Kochi, Kerala, near your location.",
-    "citations": [],
-    "critic_status": "needs_research",
-    "critic_confidence": 0.2,
-    "critic_issues": [
-      "No evidence retrieved"
-    ],
-    "critic_feedback": "No evidence available to verify the response."
-  },
-  {
-    "id": "log_1770213531603",
-    "timestamp": "2026-02-04T13:58:51.603609+00:00",
-    "query": "flood in chennai",
-    "session_id": null,
-    "retrieved_points": [],
-    "retrieval_count": 0,
-    "llm_model": "llama-3.3-70b-versatile",
-    "llm_prompt_length": 23,
-    "llm_response": "I don't know the current status of flooding in Chennai. My previous information indicated that there was no known current action of a flood in Chennai, but I don't have any new evidence to provide an update. If you're looking for the most recent information, I recommend checking a reliable news source or official updates from local authorities.",
-    "citations": [],
-    "critic_status": "needs_research",
-    "critic_confidence": 0.2,
-    "critic_issues": [
-      "No evidence retrieved"
-    ],
-    "critic_feedback": "No evidence available to verify the response."
-  },
-  {
-    "id": "log_1770213675067",
-    "timestamp": "2026-02-04T14:01:15.067702+00:00",
-    "query": "flood in chennai",
-    "session_id": null,
-    "retrieved_points": [],
-    "retrieval_count": 0,
-    "llm_model": "llama-3.3-70b-versatile",
-    "llm_prompt_length": 23,
-    "llm_response": "I don't know about any current flood situation in Chennai. The last information available was that there was no known current action of a flood in the area, but I don't have any new evidence to confirm or deny the presence of flooding.",
-    "citations": [],
-    "critic_status": "needs_research",
-    "critic_confidence": 0.2,
-    "critic_issues": [
-      "No evidence retrieved"
-    ],
-    "critic_feedback": "No evidence available to verify the response."
-  },
-  {
-    "id": "log_1770213985334",
-    "timestamp": "2026-02-04T14:06:25.334459+00:00",
+    "id": "log_1770280696747",
+    "timestamp": "2026-02-05T08:38:16.747870+00:00",
     "query": "flood in chennai",
     "session_id": null,
     "retrieved_points": [
       {
-        "id": "Bengaluru has increasingly faced ur.txt",
-        "score": 0.7018163,
-        "source": "Bengaluru has increasingly faced ur.txt",
-        "content_preview": "Bengaluru has increasingly faced urban flooding due to intense rainfall, rapid urbanization, and the loss of interconnected lake systems. Flooding is commonly reported in areas such as Silk Board Junc"
-      },
-      {
         "id": "ChatGPT Image Jan 20, 2026, 03_47_11 PM.png",
-        "score": 0.64004946,
+        "score": 0.6204843,
         "source": "ChatGPT Image Jan 20, 2026, 03_47_11 PM.png",
-        "content_preview": "Kochi, Kerala alert: Partial bridge collapse reported - Avoid crossing, exercise extreme caution immediately."
-      },
-      {
-        "id": "NoteGPT_Speech_1768910627236.wav",
-        "score": 0.8119561,
-        "source": "NoteGPT_Speech_1768910627236.wav",
-        "content_preview": "flash floods in Chennai often strike with little warning particularly in low lying neighbourhood such as velocity in medical store water drains causing water levels to rise with an average and residen"
+        "content_preview": "Kochi, Kerala alert: Car bridge collapse reported - Avoid crossing, exercise extreme caution immediately."
       },
       {
         "id": "Chennai Flood 2023_ Chennai Locals Describe Surviving Cyclone Michaung.mp4",
-        "score": 0.35194218,
+        "score": 0.33757353,
         "source": "Chennai Flood 2023_ Chennai Locals Describe Surviving Cyclone Michaung.mp4",
         "content_preview": ""
+      },
+      {
+        "id": "NoteGPT_Speech_1768910627236.wav",
+        "score": 0.6912185,
+        "source": "NoteGPT_Speech_1768910627236.wav",
+        "content_preview": "flash floods in Chennai often strike with little warning particularly in low lying neighbourhood such as velocity in medical store water drains causing water levels to rise with an average and residen"
       }
     ],
-    "retrieval_count": 4,
+    "retrieval_count": 3,
     "llm_model": "llama-3.3-70b-versatile",
     "llm_prompt_length": 23,
-    "llm_response": "\u26a0\ufe0f WARNING: Based on the retrieved evidence, it appears that Chennai has experienced flooding in the past. [NoteGPT_Speech_1768910627236.wav] mentions that \"flash floods in Chennai often strike with little warning particularly in low lying neighbourhoods\" which suggests a history of flooding in the area. Additionally, [Chennai Flood 2023_ Chennai Locals Describe Surviving Cyclone Michaung.mp4] shows a flooded street, indicating that flooding has occurred in",
+    "llm_response": "\u26a0\ufe0f WARNING: Flash floods in Chennai can strike with little warning, particularly in low-lying neighborhoods. According to [NoteGPT_Speech_1768910627236.wav], water levels can rise quickly due to heavy rainfall, causing flooding in areas such as Velachery, with water drains and medical stores being affected.\n\nVisual evidence from [Chennai Flood 2023_ Chennai Locals Describe Surviving Cyclone Michaung.mp4] shows the severity of flooding in Chennai,",
     "citations": [
-      {
-        "point_id": "Bengaluru has increasingly faced ur.txt",
-        "source": "Bengaluru has increasingly faced ur.txt",
-        "score": 0.7018163
-      },
       {
         "point_id": "ChatGPT Image Jan 20, 2026, 03_47_11 PM.png",
         "source": "ChatGPT Image Jan 20, 2026, 03_47_11 PM.png",
-        "score": 0.64004946
-      },
-      {
-        "point_id": "NoteGPT_Speech_1768910627236.wav",
-        "source": "NoteGPT_Speech_1768910627236.wav",
-        "score": 0.8119561
+        "score": 0.6204843
       },
       {
         "point_id": "Chennai Flood 2023_ Chennai Locals Describe Surviving Cyclone Michaung.mp4",
         "source": "Chennai Flood 2023_ Chennai Locals Describe Surviving Cyclone Michaung.mp4",
-        "score": 0.35194218
-      }
-    ],
-    "critic_status": "needs_rephrase",
-    "critic_confidence": 0.69,
-    "critic_issues": [
-      "Potential hallucinations detected: a history of flooding in the area"
-    ],
-    "critic_feedback": "Response needs improvement. Issues: Potential hallucinations detected: a history of flooding in the area"
-  },
-  {
-    "id": "log_1770214301423",
-    "timestamp": "2026-02-04T14:11:41.423458+00:00",
-    "query": "flood in chennai?",
-    "session_id": null,
-    "retrieved_points": [
-      {
-        "id": "Bengaluru has increasingly faced ur.txt",
-        "score": 0.6764891,
-        "source": "Bengaluru has increasingly faced ur.txt",
-        "content_preview": "Bengaluru has increasingly faced urban flooding due to intense rainfall, rapid urbanization, and the loss of interconnected lake systems. Flooding is commonly reported in areas such as Silk Board Junc"
-      },
-      {
-        "id": "ChatGPT Image Jan 20, 2026, 03_47_11 PM.png",
-        "score": 0.6218027,
-        "source": "ChatGPT Image Jan 20, 2026, 03_47_11 PM.png",
-        "content_preview": "Kochi, Kerala alert: Partial bridge collapse reported - Avoid crossing, exercise extreme caution immediately."
-      },
-      {
-        "id": "Chennai Flood 2023_ Chennai Locals Describe Surviving Cyclone Michaung.mp4",
-        "score": 0.34748572,
-        "source": "Chennai Flood 2023_ Chennai Locals Describe Surviving Cyclone Michaung.mp4",
-        "content_preview": ""
-      },
-      {
-        "id": "NoteGPT_Speech_1768910627236.wav",
-        "score": 0.78833324,
-        "source": "NoteGPT_Speech_1768910627236.wav",
-        "content_preview": "flash floods in Chennai often strike with little warning particularly in low lying neighbourhood such as velocity in medical store water drains causing water levels to rise with an average and residen"
-      }
-    ],
-    "retrieval_count": 4,
-    "llm_model": "llama-3.3-70b-versatile",
-    "llm_prompt_length": 24,
-    "llm_response": "\u26a0\ufe0f WARNING: According to [NoteGPT_Speech_1768910627236.wav], flash floods in Chennai often strike with little warning, particularly in low-lying neighborhoods. Additionally, [Evidence 3: Chennai Flood 2023_ Chennai Locals Describe Surviving Cyclone Michaung.mp4] shows a river overflow, indicating a history of flooding in the area. However, there is no current evidence of a flood situation in Chennai. It's essential to stay informed and",
-    "citations": [
-      {
-        "point_id": "Bengaluru has increasingly faced ur.txt",
-        "source": "Bengaluru has increasingly faced ur.txt",
-        "score": 0.6764891
-      },
-      {
-        "point_id": "ChatGPT Image Jan 20, 2026, 03_47_11 PM.png",
-        "source": "ChatGPT Image Jan 20, 2026, 03_47_11 PM.png",
-        "score": 0.6218027
-      },
-      {
-        "point_id": "Chennai Flood 2023_ Chennai Locals Describe Surviving Cyclone Michaung.mp4",
-        "source": "Chennai Flood 2023_ Chennai Locals Describe Surviving Cyclone Michaung.mp4",
-        "score": 0.34748572
+        "score": 0.33757353
       },
       {
         "point_id": "NoteGPT_Speech_1768910627236.wav",
         "source": "NoteGPT_Speech_1768910627236.wav",
-        "score": 0.78833324
+        "score": 0.6912185
       }
     ],
     "critic_status": "needs_rephrase",
-    "critic_confidence": 0.67,
+    "critic_confidence": 0.56,
     "critic_issues": [
-      "Potential hallucinations detected: there is no current evidence of a flood situation in Chennai, It's essential to stay informed and"
+      "Potential hallucinations detected: water levels can rise quickly due to heavy rainfall, causing flooding in areas such as Velachery, with water drains and medical stores being affected"
     ],
-    "critic_feedback": "Response needs improvement. Issues: Potential hallucinations detected: there is no current evidence of a flood situation in Chennai, It's essential to stay informed and"
+    "critic_feedback": "Response needs improvement. Issues: Potential hallucinations detected: water levels can rise quickly due to heavy rainfall, causing flooding in areas such as Velachery, with water drains and medical stores being affected"
   },
   {
-    "id": "log_1770214738431",
-    "timestamp": "2026-02-04T14:18:58.431133+00:00",
+    "id": "log_1770280844001",
+    "timestamp": "2026-02-05T08:40:44.001182+00:00",
     "query": "[SEMANTIC_SEARCH] flood in chennai",
     "session_id": null,
     "retrieved_points": [
@@ -281,21 +316,6 @@
       },
       {
         "collection": "visual",
-        "score": 0.339,
-        "source": "Chennai Flood 2023_ Chennai Locals Describe Surviving Cyclone Michaung.mp4"
-      },
-      {
-        "collection": "visual",
-        "score": 0.338,
-        "source": "Chennai Flood 2023_ Chennai Locals Describe Surviving Cyclone Michaung.mp4"
-      },
-      {
-        "collection": "visual",
-        "score": 0.337,
-        "source": "Chennai Flood 2023_ Chennai Locals Describe Surviving Cyclone Michaung.mp4"
-      },
-      {
-        "collection": "visual",
         "score": 0.337,
         "source": "Chennai Flood 2023_ Chennai Locals Describe Surviving Cyclone Michaung.mp4"
       },
@@ -307,6 +327,21 @@
       {
         "collection": "visual",
         "score": 0.336,
+        "source": "Chennai Flood 2023_ Chennai Locals Describe Surviving Cyclone Michaung.mp4"
+      },
+      {
+        "collection": "visual",
+        "score": 0.335,
+        "source": "Chennai Flood 2023_ Chennai Locals Describe Surviving Cyclone Michaung.mp4"
+      },
+      {
+        "collection": "visual",
+        "score": 0.334,
+        "source": "Chennai Flood 2023_ Chennai Locals Describe Surviving Cyclone Michaung.mp4"
+      },
+      {
+        "collection": "visual",
+        "score": 0.334,
         "source": "Chennai Flood 2023_ Chennai Locals Describe Surviving Cyclone Michaung.mp4"
       }
     ],
@@ -338,21 +373,6 @@
       {
         "point_id": null,
         "source": "Chennai Flood 2023_ Chennai Locals Describe Surviving Cyclone Michaung.mp4",
-        "score": 0.339
-      },
-      {
-        "point_id": null,
-        "source": "Chennai Flood 2023_ Chennai Locals Describe Surviving Cyclone Michaung.mp4",
-        "score": 0.338
-      },
-      {
-        "point_id": null,
-        "source": "Chennai Flood 2023_ Chennai Locals Describe Surviving Cyclone Michaung.mp4",
-        "score": 0.337
-      },
-      {
-        "point_id": null,
-        "source": "Chennai Flood 2023_ Chennai Locals Describe Surviving Cyclone Michaung.mp4",
         "score": 0.337
       },
       {
@@ -364,11 +384,519 @@
         "point_id": null,
         "source": "Chennai Flood 2023_ Chennai Locals Describe Surviving Cyclone Michaung.mp4",
         "score": 0.336
+      },
+      {
+        "point_id": null,
+        "source": "Chennai Flood 2023_ Chennai Locals Describe Surviving Cyclone Michaung.mp4",
+        "score": 0.335
+      },
+      {
+        "point_id": null,
+        "source": "Chennai Flood 2023_ Chennai Locals Describe Surviving Cyclone Michaung.mp4",
+        "score": 0.334
+      },
+      {
+        "point_id": null,
+        "source": "Chennai Flood 2023_ Chennai Locals Describe Surviving Cyclone Michaung.mp4",
+        "score": 0.334
       }
     ],
     "critic_status": "semantic_search",
     "critic_confidence": 0.1,
     "critic_issues": [],
     "critic_feedback": null
+  },
+  {
+    "id": "log_1770281134369",
+    "timestamp": "2026-02-05T08:45:34.369351+00:00",
+    "query": "[SEMANTIC_SEARCH] flood in kerala",
+    "session_id": null,
+    "retrieved_points": [
+      {
+        "collection": "visual",
+        "score": 0.345,
+        "source": "Chennai Flood 2023_ Chennai Locals Describe Surviving Cyclone Michaung.mp4"
+      },
+      {
+        "collection": "visual",
+        "score": 0.334,
+        "source": "Chennai Flood 2023_ Chennai Locals Describe Surviving Cyclone Michaung.mp4"
+      },
+      {
+        "collection": "visual",
+        "score": 0.33,
+        "source": "Chennai Flood 2023_ Chennai Locals Describe Surviving Cyclone Michaung.mp4"
+      },
+      {
+        "collection": "visual",
+        "score": 0.326,
+        "source": "Chennai Flood 2023_ Chennai Locals Describe Surviving Cyclone Michaung.mp4"
+      },
+      {
+        "collection": "visual",
+        "score": 0.322,
+        "source": "Chennai Flood 2023_ Chennai Locals Describe Surviving Cyclone Michaung.mp4"
+      },
+      {
+        "collection": "visual",
+        "score": 0.321,
+        "source": "Chennai Flood 2023_ Chennai Locals Describe Surviving Cyclone Michaung.mp4"
+      },
+      {
+        "collection": "visual",
+        "score": 0.321,
+        "source": "Chennai Flood 2023_ Chennai Locals Describe Surviving Cyclone Michaung.mp4"
+      },
+      {
+        "collection": "visual",
+        "score": 0.32,
+        "source": "Chennai Flood 2023_ Chennai Locals Describe Surviving Cyclone Michaung.mp4"
+      },
+      {
+        "collection": "visual",
+        "score": 0.319,
+        "source": "Chennai Flood 2023_ Chennai Locals Describe Surviving Cyclone Michaung.mp4"
+      },
+      {
+        "collection": "visual",
+        "score": 0.317,
+        "source": "ChatGPT Image Jan 20, 2026, 03_47_11 PM.png"
+      }
+    ],
+    "retrieval_count": 10,
+    "llm_model": "llama-3.3-70b-versatile",
+    "llm_prompt_length": 34,
+    "llm_response": "Found 5 results after filtering",
+    "citations": [
+      {
+        "point_id": null,
+        "source": "Chennai Flood 2023_ Chennai Locals Describe Surviving Cyclone Michaung.mp4",
+        "score": 0.345
+      },
+      {
+        "point_id": null,
+        "source": "Chennai Flood 2023_ Chennai Locals Describe Surviving Cyclone Michaung.mp4",
+        "score": 0.334
+      },
+      {
+        "point_id": null,
+        "source": "Chennai Flood 2023_ Chennai Locals Describe Surviving Cyclone Michaung.mp4",
+        "score": 0.33
+      },
+      {
+        "point_id": null,
+        "source": "Chennai Flood 2023_ Chennai Locals Describe Surviving Cyclone Michaung.mp4",
+        "score": 0.326
+      },
+      {
+        "point_id": null,
+        "source": "Chennai Flood 2023_ Chennai Locals Describe Surviving Cyclone Michaung.mp4",
+        "score": 0.322
+      },
+      {
+        "point_id": null,
+        "source": "Chennai Flood 2023_ Chennai Locals Describe Surviving Cyclone Michaung.mp4",
+        "score": 0.321
+      },
+      {
+        "point_id": null,
+        "source": "Chennai Flood 2023_ Chennai Locals Describe Surviving Cyclone Michaung.mp4",
+        "score": 0.321
+      },
+      {
+        "point_id": null,
+        "source": "Chennai Flood 2023_ Chennai Locals Describe Surviving Cyclone Michaung.mp4",
+        "score": 0.32
+      },
+      {
+        "point_id": null,
+        "source": "Chennai Flood 2023_ Chennai Locals Describe Surviving Cyclone Michaung.mp4",
+        "score": 0.319
+      },
+      {
+        "point_id": null,
+        "source": "ChatGPT Image Jan 20, 2026, 03_47_11 PM.png",
+        "score": 0.317
+      }
+    ],
+    "critic_status": "semantic_search",
+    "critic_confidence": 0.5,
+    "critic_issues": [],
+    "critic_feedback": null
+  },
+  {
+    "id": "log_1770281170766",
+    "timestamp": "2026-02-05T08:46:10.766692+00:00",
+    "query": "[SEMANTIC_SEARCH] flood in kerala",
+    "session_id": null,
+    "retrieved_points": [
+      {
+        "collection": "visual",
+        "score": 0.345,
+        "source": "Chennai Flood 2023_ Chennai Locals Describe Surviving Cyclone Michaung.mp4"
+      },
+      {
+        "collection": "visual",
+        "score": 0.334,
+        "source": "Chennai Flood 2023_ Chennai Locals Describe Surviving Cyclone Michaung.mp4"
+      },
+      {
+        "collection": "visual",
+        "score": 0.33,
+        "source": "Chennai Flood 2023_ Chennai Locals Describe Surviving Cyclone Michaung.mp4"
+      },
+      {
+        "collection": "visual",
+        "score": 0.326,
+        "source": "Chennai Flood 2023_ Chennai Locals Describe Surviving Cyclone Michaung.mp4"
+      },
+      {
+        "collection": "visual",
+        "score": 0.322,
+        "source": "Chennai Flood 2023_ Chennai Locals Describe Surviving Cyclone Michaung.mp4"
+      },
+      {
+        "collection": "visual",
+        "score": 0.321,
+        "source": "Chennai Flood 2023_ Chennai Locals Describe Surviving Cyclone Michaung.mp4"
+      },
+      {
+        "collection": "visual",
+        "score": 0.321,
+        "source": "Chennai Flood 2023_ Chennai Locals Describe Surviving Cyclone Michaung.mp4"
+      },
+      {
+        "collection": "visual",
+        "score": 0.32,
+        "source": "Chennai Flood 2023_ Chennai Locals Describe Surviving Cyclone Michaung.mp4"
+      },
+      {
+        "collection": "visual",
+        "score": 0.319,
+        "source": "Chennai Flood 2023_ Chennai Locals Describe Surviving Cyclone Michaung.mp4"
+      },
+      {
+        "collection": "visual",
+        "score": 0.317,
+        "source": "ChatGPT Image Jan 20, 2026, 03_47_11 PM.png"
+      }
+    ],
+    "retrieval_count": 10,
+    "llm_model": "llama-3.3-70b-versatile",
+    "llm_prompt_length": 34,
+    "llm_response": "Found 5 results after filtering",
+    "citations": [
+      {
+        "point_id": null,
+        "source": "Chennai Flood 2023_ Chennai Locals Describe Surviving Cyclone Michaung.mp4",
+        "score": 0.345
+      },
+      {
+        "point_id": null,
+        "source": "Chennai Flood 2023_ Chennai Locals Describe Surviving Cyclone Michaung.mp4",
+        "score": 0.334
+      },
+      {
+        "point_id": null,
+        "source": "Chennai Flood 2023_ Chennai Locals Describe Surviving Cyclone Michaung.mp4",
+        "score": 0.33
+      },
+      {
+        "point_id": null,
+        "source": "Chennai Flood 2023_ Chennai Locals Describe Surviving Cyclone Michaung.mp4",
+        "score": 0.326
+      },
+      {
+        "point_id": null,
+        "source": "Chennai Flood 2023_ Chennai Locals Describe Surviving Cyclone Michaung.mp4",
+        "score": 0.322
+      },
+      {
+        "point_id": null,
+        "source": "Chennai Flood 2023_ Chennai Locals Describe Surviving Cyclone Michaung.mp4",
+        "score": 0.321
+      },
+      {
+        "point_id": null,
+        "source": "Chennai Flood 2023_ Chennai Locals Describe Surviving Cyclone Michaung.mp4",
+        "score": 0.321
+      },
+      {
+        "point_id": null,
+        "source": "Chennai Flood 2023_ Chennai Locals Describe Surviving Cyclone Michaung.mp4",
+        "score": 0.32
+      },
+      {
+        "point_id": null,
+        "source": "Chennai Flood 2023_ Chennai Locals Describe Surviving Cyclone Michaung.mp4",
+        "score": 0.319
+      },
+      {
+        "point_id": null,
+        "source": "ChatGPT Image Jan 20, 2026, 03_47_11 PM.png",
+        "score": 0.317
+      }
+    ],
+    "critic_status": "semantic_search",
+    "critic_confidence": 0.5,
+    "critic_issues": [],
+    "critic_feedback": null
+  },
+  {
+    "id": "log_1770281179369",
+    "timestamp": "2026-02-05T08:46:19.369543+00:00",
+    "query": "flood in kerala and bridge colaspe ",
+    "session_id": null,
+    "retrieved_points": [
+      {
+        "id": "ChatGPT Image Feb 5, 2026, 02_05_23 PM copy.png",
+        "score": 0.785838,
+        "source": "ChatGPT Image Feb 5, 2026, 02_05_23 PM copy.png",
+        "content_preview": "Pallikkara, Kerala alert: Urban flooding with submerged streets and stranded vehicles - Seek higher ground immediately."
+      },
+      {
+        "id": "ChatGPT Image Jan 20, 2026, 03_47_11 PM.png",
+        "score": 0.7281129,
+        "source": "ChatGPT Image Jan 20, 2026, 03_47_11 PM.png",
+        "content_preview": "Kochi, Kerala alert: Bridge collapse reported - Avoid crossing, exercise extreme caution immediately."
+      },
+      {
+        "id": "ChatGPT Image Feb 5, 2026, 02_05_23 PM.png",
+        "score": 0.71657383,
+        "source": "ChatGPT Image Feb 5, 2026, 02_05_23 PM.png",
+        "content_preview": "Pallikkara alert: Urban flooding with submerged streets and stranded vehicles - Seek higher ground immediately."
+      },
+      {
+        "id": "Chennai Flood 2023_ Chennai Locals Describe Surviving Cyclone Michaung.mp4",
+        "score": 0.30062234,
+        "source": "Chennai Flood 2023_ Chennai Locals Describe Surviving Cyclone Michaung.mp4",
+        "content_preview": ""
+      },
+      {
+        "id": "NoteGPT_Speech_1768910627236.wav",
+        "score": 0.66150135,
+        "source": "NoteGPT_Speech_1768910627236.wav",
+        "content_preview": "flash floods in Chennai often strike with little warning particularly in low lying neighbourhood such as velocity in medical store water drains causing water levels to rise with an average and residen"
+      }
+    ],
+    "retrieval_count": 5,
+    "llm_model": "llama-3.3-70b-versatile",
+    "llm_prompt_length": 42,
+    "llm_response": "\u26a0\ufe0f WARNING: There have been reports of urban flooding and bridge collapses in Kerala. According to [Evidence 1: ChatGPT Image Feb 5, 2026, 02_05_23 PM copy.png] and [Evidence 3: ChatGPT Image Feb 5, 2026, 02_05_23 PM.png], Pallikkara, Kerala has experienced urban flooding with submerged streets and stranded vehicles, with warnings to seek higher ground immediately. Additionally",
+    "citations": [
+      {
+        "point_id": "ChatGPT Image Feb 5, 2026, 02_05_23 PM copy.png",
+        "source": "ChatGPT Image Feb 5, 2026, 02_05_23 PM copy.png",
+        "score": 0.785838
+      },
+      {
+        "point_id": "ChatGPT Image Jan 20, 2026, 03_47_11 PM.png",
+        "source": "ChatGPT Image Jan 20, 2026, 03_47_11 PM.png",
+        "score": 0.7281129
+      },
+      {
+        "point_id": "ChatGPT Image Feb 5, 2026, 02_05_23 PM.png",
+        "source": "ChatGPT Image Feb 5, 2026, 02_05_23 PM.png",
+        "score": 0.71657383
+      },
+      {
+        "point_id": "Chennai Flood 2023_ Chennai Locals Describe Surviving Cyclone Michaung.mp4",
+        "source": "Chennai Flood 2023_ Chennai Locals Describe Surviving Cyclone Michaung.mp4",
+        "score": 0.30062234
+      },
+      {
+        "point_id": "NoteGPT_Speech_1768910627236.wav",
+        "source": "NoteGPT_Speech_1768910627236.wav",
+        "score": 0.66150135
+      }
+    ],
+    "critic_status": "needs_rephrase",
+    "critic_confidence": 0.74,
+    "critic_issues": [
+      "Potential hallucinations detected: with warnings to seek higher ground immediately"
+    ],
+    "critic_feedback": "Response needs improvement. Issues: Potential hallucinations detected: with warnings to seek higher ground immediately"
+  },
+  {
+    "id": "log_1770281337689",
+    "timestamp": "2026-02-05T08:48:57.689006+00:00",
+    "query": "[SEMANTIC_SEARCH] flood in kerala",
+    "session_id": null,
+    "retrieved_points": [
+      {
+        "collection": "visual",
+        "score": 0.345,
+        "source": "Chennai Flood 2023_ Chennai Locals Describe Surviving Cyclone Michaung.mp4"
+      },
+      {
+        "collection": "visual",
+        "score": 0.334,
+        "source": "Chennai Flood 2023_ Chennai Locals Describe Surviving Cyclone Michaung.mp4"
+      },
+      {
+        "collection": "visual",
+        "score": 0.33,
+        "source": "Chennai Flood 2023_ Chennai Locals Describe Surviving Cyclone Michaung.mp4"
+      },
+      {
+        "collection": "visual",
+        "score": 0.326,
+        "source": "Chennai Flood 2023_ Chennai Locals Describe Surviving Cyclone Michaung.mp4"
+      },
+      {
+        "collection": "visual",
+        "score": 0.322,
+        "source": "Chennai Flood 2023_ Chennai Locals Describe Surviving Cyclone Michaung.mp4"
+      },
+      {
+        "collection": "visual",
+        "score": 0.321,
+        "source": "Chennai Flood 2023_ Chennai Locals Describe Surviving Cyclone Michaung.mp4"
+      },
+      {
+        "collection": "visual",
+        "score": 0.321,
+        "source": "Chennai Flood 2023_ Chennai Locals Describe Surviving Cyclone Michaung.mp4"
+      },
+      {
+        "collection": "visual",
+        "score": 0.32,
+        "source": "Chennai Flood 2023_ Chennai Locals Describe Surviving Cyclone Michaung.mp4"
+      },
+      {
+        "collection": "visual",
+        "score": 0.319,
+        "source": "Chennai Flood 2023_ Chennai Locals Describe Surviving Cyclone Michaung.mp4"
+      },
+      {
+        "collection": "visual",
+        "score": 0.317,
+        "source": "ChatGPT Image Jan 20, 2026, 03_47_11 PM.png"
+      }
+    ],
+    "retrieval_count": 10,
+    "llm_model": "llama-3.3-70b-versatile",
+    "llm_prompt_length": 34,
+    "llm_response": "Found 5 results after filtering",
+    "citations": [
+      {
+        "point_id": null,
+        "source": "Chennai Flood 2023_ Chennai Locals Describe Surviving Cyclone Michaung.mp4",
+        "score": 0.345
+      },
+      {
+        "point_id": null,
+        "source": "Chennai Flood 2023_ Chennai Locals Describe Surviving Cyclone Michaung.mp4",
+        "score": 0.334
+      },
+      {
+        "point_id": null,
+        "source": "Chennai Flood 2023_ Chennai Locals Describe Surviving Cyclone Michaung.mp4",
+        "score": 0.33
+      },
+      {
+        "point_id": null,
+        "source": "Chennai Flood 2023_ Chennai Locals Describe Surviving Cyclone Michaung.mp4",
+        "score": 0.326
+      },
+      {
+        "point_id": null,
+        "source": "Chennai Flood 2023_ Chennai Locals Describe Surviving Cyclone Michaung.mp4",
+        "score": 0.322
+      },
+      {
+        "point_id": null,
+        "source": "Chennai Flood 2023_ Chennai Locals Describe Surviving Cyclone Michaung.mp4",
+        "score": 0.321
+      },
+      {
+        "point_id": null,
+        "source": "Chennai Flood 2023_ Chennai Locals Describe Surviving Cyclone Michaung.mp4",
+        "score": 0.321
+      },
+      {
+        "point_id": null,
+        "source": "Chennai Flood 2023_ Chennai Locals Describe Surviving Cyclone Michaung.mp4",
+        "score": 0.32
+      },
+      {
+        "point_id": null,
+        "source": "Chennai Flood 2023_ Chennai Locals Describe Surviving Cyclone Michaung.mp4",
+        "score": 0.319
+      },
+      {
+        "point_id": null,
+        "source": "ChatGPT Image Jan 20, 2026, 03_47_11 PM.png",
+        "score": 0.317
+      }
+    ],
+    "critic_status": "semantic_search",
+    "critic_confidence": 0.5,
+    "critic_issues": [],
+    "critic_feedback": null
+  },
+  {
+    "id": "log_1770281344659",
+    "timestamp": "2026-02-05T08:49:04.659302+00:00",
+    "query": "flood in Bengaluru North ",
+    "session_id": null,
+    "retrieved_points": [
+      {
+        "id": "Bengaluru has increasingly faced ur.txt",
+        "score": 0.7539555,
+        "source": "Bengaluru has increasingly faced ur.txt",
+        "content_preview": "Bengaluru has increasingly faced urban flooding due to intense rainfall, rapid urbanization, and the loss of interconnected lake systems. Flooding is commonly reported in areas such as Silk Board Junc"
+      },
+      {
+        "id": "ChatGPT Image Feb 5, 2026, 02_05_23 PM.png",
+        "score": 0.65871215,
+        "source": "ChatGPT Image Feb 5, 2026, 02_05_23 PM.png",
+        "content_preview": "Pallikkara alert: Urban flooding with submerged streets and stranded vehicles - Seek higher ground immediately."
+      },
+      {
+        "id": "ChatGPT Image Feb 5, 2026, 02_05_23 PM copy.png",
+        "score": 0.63974273,
+        "source": "ChatGPT Image Feb 5, 2026, 02_05_23 PM copy.png",
+        "content_preview": "Pallikkara, Kerala alert: Urban flooding with submerged streets and stranded vehicles - Seek higher ground immediately."
+      },
+      {
+        "id": "ChatGPT Image Jan 20, 2026, 03_47_11 PM.png",
+        "score": 0.6092242,
+        "source": "ChatGPT Image Jan 20, 2026, 03_47_11 PM.png",
+        "content_preview": "Kochi, Kerala alert: Car bridge collapse reported - Avoid crossing, exercise extreme caution immediately."
+      }
+    ],
+    "retrieval_count": 4,
+    "llm_model": "llama-3.3-70b-versatile",
+    "llm_prompt_length": 32,
+    "llm_response": "\u26a0\ufe0f WARNING: Urban flooding has been a concern in Bengaluru due to intense rainfall, rapid urbanization, and the loss of interconnected lake systems. According to [Evidence 1: Bengaluru has increasingly faced ur.txt], flooding is commonly reported in areas such as Silk Board Junction. However, there is no specific information available in the retrieved evidence regarding a current flood in Bengaluru North. If you are in the area, please exercise caution and monitor local news for updates on flood warnings.",
+    "citations": [
+      {
+        "point_id": "Bengaluru has increasingly faced ur.txt",
+        "source": "Bengaluru has increasingly faced ur.txt",
+        "score": 0.7539555
+      },
+      {
+        "point_id": "ChatGPT Image Feb 5, 2026, 02_05_23 PM.png",
+        "source": "ChatGPT Image Feb 5, 2026, 02_05_23 PM.png",
+        "score": 0.65871215
+      },
+      {
+        "point_id": "ChatGPT Image Feb 5, 2026, 02_05_23 PM copy.png",
+        "source": "ChatGPT Image Feb 5, 2026, 02_05_23 PM copy.png",
+        "score": 0.63974273
+      },
+      {
+        "point_id": "ChatGPT Image Jan 20, 2026, 03_47_11 PM.png",
+        "source": "ChatGPT Image Jan 20, 2026, 03_47_11 PM.png",
+        "score": 0.6092242
+      }
+    ],
+    "critic_status": "approved",
+    "critic_confidence": 0.76,
+    "critic_issues": [
+      "Potential hallucinations detected: flooding is commonly reported in areas such as Silk Board Junction, If you are in the area, please exercise caution and monitor local news for updates on flood warnings"
+    ],
+    "critic_feedback": "Response verified with 76% confidence. Citations present and claims grounded."
   }
 ]

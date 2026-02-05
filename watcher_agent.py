@@ -192,8 +192,8 @@ class VideoHandler(FileSystemEventHandler):
                 scores.sort(key=lambda x: x[1], reverse=True)
                 top_label, top_score = scores[0]
                 
-                # Threshold Check
-                if top_score > 0.22 and top_label not in ["person", "car", "truck"]:
+                # Threshold Check - Raised to 0.30 to reduce false positives
+                if top_score > 0.30 and top_label not in ["person", "car", "truck"]:
                     primary_disaster = top_label
                     max_conf = float(top_score)
                     detection_source = "CLIP (Hybrid)"
@@ -219,9 +219,16 @@ class VideoHandler(FileSystemEventHandler):
                             location = self.geolocator.geocode(location_name)
                             if location:
                                 detected_location = {"lat": location.latitude, "lon": location.longitude, "name": location.address}
-                                print(f"   📍 Geotagged: {location.address}")
+                                print(f"   📍 Geotagged (OCR): {location.address}")
                 except Exception as e:
                     pass  # Silent fail for OCR on video frames
+            
+            # SKIP non-disaster frames (unless they have location)
+            if primary_disaster in ["None", "person", "car", "truck"] and not detected_location:
+                # Demo log every 300 frames
+                if frame_count % 300 == 0:
+                    print(f"   ⛔ Frame {frame_count}: No disaster detected - Skipping")
+                continue  # Don't index this frame
 
             payload = {
                 "source": os.path.basename(video_path),

@@ -16,6 +16,7 @@ from groq import Groq
 from dotenv import load_dotenv
 from config import get_qdrant_client, ensure_collection, DISASTER_CLASSES
 from llm_manager import get_llm_manager
+from geo_utils import get_hybrid_geolocator
 
 load_dotenv()
 
@@ -52,6 +53,10 @@ class ImageHandler(FileSystemEventHandler):
         from memory_manager import get_memory_manager
         self.memory_manager = get_memory_manager()
         self.memory_manager.ensure_collections() # Creates All (visual, tactical, etc.)
+        
+        # Initialize Hybrid Geolocator
+        self.hybrid_geo = get_hybrid_geolocator()
+        print("✅ Hybrid Geolocation Ready (EXIF → OCR → Fallback).")
 
     def extract_location_with_llm(self, ocr_text):
         """Use LLM to extract location/place names from OCR text."""
@@ -211,49 +216,109 @@ class ImageHandler(FileSystemEventHandler):
             scores.sort(key=lambda x: x[1], reverse=True)
             top_label, top_score = scores[0]
             
-            # Threshold Check (e.g., 0.22 is a reasonable starting point for CLIP/BGE matches)
-            if top_score > 0.22 and top_label not in ["person", "car", "truck"]:
+            # Threshold Check - Raised to 0.30 to reduce false positives on blank images
+            if top_score > 0.30 and top_label not in ["person", "car", "truck"]:
                 primary_disaster = top_label
                 max_conf = float(top_score)
                 detection_source = "CLIP (Hybrid)"
                 print(f"   🧠 Hybrid Correction: Reclassified as '{primary_disaster}' (Score: {top_score:.2f})")
         
-        # --- OCR & GEOLOCATION ---
+        # --- HYBRID GEOLOCATION (EXIF → OCR → Fallback) ---
         ocr_text = ""
         detected_location = None
+        location_source = "None"
         
-        try:
-            # Simple OCR
-            results = self.reader.readtext(frame, detail=0)
-            ocr_text = " ".join(results)
+        # TIER 1: Try EXIF GPS Metadata (most accurate)
+        exif_location = self.hybrid_geo.get_exif_location(image_path)
+        if exif_location:
+            detected_location = exif_location
+            location_source = "EXIF"
+            print(f"   🛰️ EXIF GPS Found: {exif_location['lat']:.4f}, {exif_location['lon']:.4f}")
+            print(f"   📍 Resolved Address: {exif_location['name'][:60]}")
             
-            if ocr_text:
-                print(f"   📝 OCR Extracted: {ocr_text}")
+            # DEMO: Show when metadata exists but no disaster
+            if primary_disaster in ["None", "person", "car", "truck"]:
+                print(f"   ⚠️ METADATA FOUND but NO DISASTER detected - Skipping index (Demo: Location works!)")
+                return  # Skip indexing for non-disaster images with GPS
+        
+        # TIER 2: OCR + LLM (current logic - for news screenshots)
+        if not detected_location:
+            try:
+                results = self.reader.readtext(frame, detail=0)
+                ocr_text = " ".join(results)
                 
-            # SMART LOCATION EXTRACTION
-            # Step 1: Try LLM to extract location intelligently
-            location_name = self.extract_location_with_llm(ocr_text)
-            
-            # Step 2: Fallback to basic text cleaning if LLM fails
-            if not location_name and len(ocr_text) > 3:
-                # Basic cleaning for common patterns
-                clean_text = ocr_text.replace("BREAKING NEWS", "").replace("MAJOR", "").replace("FLOODING", "").replace("IN", "").strip()
-                if "," in clean_text:
-                    parts = clean_text.split(",")
-                    location_name = parts[0] + ", " + parts[1]
-                else:
-                    location_name = clean_text
+                if ocr_text:
+                    print(f"   📝 OCR Extracted: {ocr_text}")
+                    
+                    # --- NEW: TEXT-BASED CLASSIFICATION OVERRIDE ---
+                    # If visual models failed (or found only generic objects like car/person), 
+                    # check if OCR text contains strong disaster keywords.
+                    if primary_disaster in ["None", "person", "car", "truck", "umbrella"]:
+                        ocr_lower = ocr_text.lower()
+                        for disaster_type in DISASTER_CLASSES:
+                            if disaster_type in ocr_lower:
+                                primary_disaster = disaster_type
+                                max_conf = 0.99 # High confidence because text explicitly says it
+                                detection_source = "OCR Text"
+                                print(f"   📖 Text Correction: Reclassified as '{primary_disaster}' from OCR keywords")
+                                break
+                        # Specific mapping for common news terms
+                        if "flood" in ocr_lower or "inundat" in ocr_lower:
+                            primary_disaster = "urban flooding"
+                            max_conf = 0.99
+                            detection_source = "OCR Text"
+                            print(f"   📖 Text Correction: Reclassified as '{primary_disaster}' from OCR keywords")
+                        elif "collapse" in ocr_lower and "bridge" in ocr_lower:
+                            primary_disaster = "infrastructure collapse"
+                            max_conf = 0.99
+                            detection_source = "OCR Text"
+                            print(f"   📖 Text Correction: Reclassified as '{primary_disaster}' from OCR keywords")
+                    # -----------------------------------------------
+                    
+                # SMART LOCATION EXTRACTION
+                location_name = self.extract_location_with_llm(ocr_text)
                 
-            # Step 3: Geocode the extracted location
-            if location_name:
-                location = self.geolocator.geocode(location_name)
-                if location:
-                    detected_location = {"lat": location.latitude, "lon": location.longitude, "name": location.address}
-                    print(f"   📍 Geotagged: {location.address}")
-                else:
-                    print(f"   ⚠️ Could not geocode: {location_name}")
-        except Exception as e:
-            print(f"   ⚠️ OCR/Geo Error: {e}")
+                # Fallback to basic text cleaning if LLM fails
+                if not location_name and len(ocr_text) > 3:
+                    clean_text = ocr_text.replace("BREAKING NEWS", "").replace("MAJOR", "").replace("FLOODING", "").replace("IN", "").strip()
+                    if "," in clean_text:
+                        parts = clean_text.split(",")
+                        location_name = parts[0] + ", " + parts[1]
+                    else:
+                        location_name = clean_text
+                    
+                # Geocode the extracted location (Recursive Fallback)
+                if location_name:
+                    # Try 1: Full string
+                    location = self.geolocator.geocode(location_name)
+                    
+                    # Try 2: If failed and contains comma, try parts (e.g. "Kumarapuram, Kerala" -> "Kumarapuram" or "Kerala")
+                    if not location and "," in location_name:
+                        parts = [p.strip() for p in location_name.split(",")]
+                        # Try last part (usually state/country) - broadest
+                        if not location and len(parts) > 0:
+                            print(f"   ⚠️ Geocode failed for '{location_name}', trying '{parts[-1]}'")
+                            location = self.geolocator.geocode(parts[-1])
+                            
+                        # Try first part + last part (City, State)
+                        if not location and len(parts) > 2:
+                            new_query = f"{parts[0]}, {parts[-1]}"
+                            print(f"   ⚠️ Geocode failed for '{parts[-1]}', trying '{new_query}'")
+                            location = self.geolocator.geocode(new_query)
+
+                    if location:
+                        detected_location = {"lat": location.latitude, "lon": location.longitude, "name": location.address}
+                        location_source = "OCR"
+                        print(f"   📍 Geotagged (OCR): {location.address}")
+                    else:
+                        print(f"   ⚠️ Could not geocode: {location_name}")
+            except Exception as e:
+                print(f"   ⚠️ OCR/Geo Error: {e}")
+        
+        # TIER 3: Skip if no disaster AND no location
+        if primary_disaster in ["None", "person", "car", "truck", "umbrella"] and not detected_location:
+            print(f"   ⛔ No disaster and no location - Skipping this image")
+            return
             
         # -------------------------
         
