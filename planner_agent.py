@@ -54,7 +54,17 @@ RULES:
 EXAMPLE OUTPUT:
 {"steps": [{"tool": "search_tactical_memory", "query": "flood chennai", "reasoning": "Get reports"}]}"""
         
-        full_prompt = f"USER QUERY: {user_query}\n\nRETURN JSON ONLY:"
+
+        full_prompt = f"""CONTEXT FROM PREVIOUS TURN:
+{context}
+
+USER QUERY: {user_query}
+
+INSTRUCTIONS:
+1. If the query uses pronouns like "it", "there", "that", "status", REPLACE them with the specific location/topic from the CONTEXT.
+2. Example: If Context says "floods in Bengaluru" and Query is "status there", search for "Bengaluru flood status".
+3. RETURN JSON ONLY."""
+
         
         response = self.llm.chat_completion(
             messages=[

@@ -88,11 +88,12 @@ class EpisodicMemory:
         
         # 1. Recent (Last 2)
         try:
-            # Scroll provides storage order, usually roughly time-based. 
-            # Ideally we sort by timestamp payload in Python.
+            # Scroll provides storage order (ID ascending = oldest first).
+            # To get "Recent", we must fetch enough points to reach the end, or use a better query.
+            # FIX: Increase limit to 100 to check more history.
             recent_points = self.client.scroll(
                 collection_name=self.COLLECTION_NAME,
-                limit=10, 
+                limit=100, 
                 with_payload=True
             )[0]
             

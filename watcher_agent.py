@@ -63,6 +63,7 @@ class VideoHandler(FileSystemEventHandler):
             2. REJECT noise words: "Ila", "The", "Express", "EXPRES", "Usually", "News".
             3. Return ONLY precise locations (e.g., "Mumbai", "Kerala", "Visakhapatnam").
             4. If unsure or no clear specific location found, return "NONE".
+            5. OUTPUT FORMAT: Just the location string. NO conversational filler. NO "However". NO "Here is".
             
             Text: "{text[:300]}"
             
@@ -78,10 +79,17 @@ class VideoHandler(FileSystemEventHandler):
             noise_words = ["none", "ila", "indian", "india", "the", "express", "usually", "we", "for", "news", "usa", "uk", "america"]
             
             if location:
-                clean_loc = location.strip().lower()
-                if clean_loc not in noise_words and len(clean_loc) > 3:
-                    print(f"   🤖 LLM Extracted Location: {location}")
-                    return location.strip()
+                # SANITIZATION: Chatty models might say "Kerala, India\n\nHowever..."
+                # 1. Take first line only
+                clean_loc = location.split('\n')[0].strip()
+                # 2. Remove "However" clauses if they snuck in
+                if "however" in clean_loc.lower():
+                    clean_loc = clean_loc.lower().split("however")[0].strip()
+                    
+                lc_check = clean_loc.lower()
+                if lc_check not in noise_words and len(lc_check) > 3:
+                    print(f"   🤖 LLM Extracted Location: {clean_loc}")
+                    return clean_loc
             return None
         except Exception as e:
             print(f"   ⚠️ LLM Error: {e}")
@@ -192,8 +200,8 @@ class VideoHandler(FileSystemEventHandler):
                 scores.sort(key=lambda x: x[1], reverse=True)
                 top_label, top_score = scores[0]
                 
-                # Threshold Check - Raised to 0.30 to reduce false positives
-                if top_score > 0.30 and top_label not in ["person", "car", "truck"]:
+                # Threshold Check - Lowered to 0.25 to catch floods scoring ~0.30
+                if top_score > 0.25 and top_label not in ["person", "car", "truck"]:
                     primary_disaster = top_label
                     max_conf = float(top_score)
                     detection_source = "CLIP (Hybrid)"
@@ -230,11 +238,23 @@ class VideoHandler(FileSystemEventHandler):
                     print(f"   ⛔ Frame {frame_count}: No disaster detected - Skipping")
                 continue  # Don't index this frame
 
+            # Sanitize Label for Map (Don't show "car" or "person" as the disaster)
+            display_label = primary_disaster
+            
+            # MULTIMODAL OVERRIDE: If OCR says "flood" but Vision says "car", trust OCR!
+            ocr_lower = ocr_text.lower() if 'ocr_text' in locals() and ocr_text else ""
+            if "flood" in ocr_lower or "submerged" in ocr_lower or "water logging" in ocr_lower:
+                display_label = "Urban Flooding"
+            elif "rain" in ocr_lower:
+                display_label = "Heavy Rain"
+            elif display_label in ["person", "car", "truck", "None"]:
+                 display_label = "Visual Activity"
+
             payload = {
                 "agent": "watcher_agent",  # Attribution for hackathon
                 "source": os.path.basename(video_path),
                 "type": "visual",
-                "detected_disaster": primary_disaster,
+                "detected_disaster": display_label,
                 "confidence": {"visual": float(max_conf), "source": detection_source},
                 "timestamp": datetime.datetime.now(datetime.timezone.utc).isoformat(),
                 "detections": detections,

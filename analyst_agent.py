@@ -35,9 +35,17 @@ def save_alert(alert_data):
     alerts.insert(0, alert_data)
     alerts = alerts[:50]
     
-    with open(ALERT_FILE, "w") as f:
-        json.dump(alerts, f, indent=2)
-    print(f"🚨 ALERT SAVED: {alert_data['msg']}")
+    # ATOMIC WRITE: Write to temp file then rename
+    temp_file = f"{ALERT_FILE}.tmp"
+    try:
+        with open(temp_file, "w") as f:
+            json.dump(alerts, f, indent=2)
+        os.replace(temp_file, ALERT_FILE)
+        print(f"🚨 ALERT SAVED: {alert_data['msg']}")
+    except Exception as e:
+        print(f"❌ Error saving alert: {e}")
+        if os.path.exists(temp_file):
+            os.remove(temp_file)
 
 def verify_hazard(llm, toolkit, hazard_type, location, source_description):
     """

@@ -206,13 +206,14 @@ except Exception as e:
 
 # --- RAG Logic for Chat with Strategic Retrieval (Tool Use) ---
 # --- RAG Logic for Chat with Planner Agent ---
-def get_rag_response(query):
+def get_rag_response(query, chat_history=None):
     """
     Generate a response using Explicit Planner + Strategic Retrieval + Critic + Episodic Memory.
     
     Returns: (response_text, media_items, evaluation, agent_logs)
     """
     agent_logs = []  # NEW: Collect agent brain logs for UI display
+    chat_history = chat_history or []
     
     groq_key = os.getenv("GROQ_API_KEY")
     if not groq_key:
@@ -237,17 +238,30 @@ def get_rag_response(query):
         if not llm_manager:
             return "⚠️ LLM Service Unavailable.", [], None, []
 
-        # 1. RETRIEVE EPISODIC CONTEXT
+        # 1. RETRIEVE EPISODIC CONTEXT (Long-Term)
         past_context = episodic_memory.retrieve_context(query)
-        context_str = "\n- ".join(past_context) if past_context else "No prior context."
+        context_str = "\n- ".join(past_context) if past_context else ""
         
-        # LOG: Episodic Memory
+        # 1.5 ACTIVE CONTEXT BUFFER (Short-Term - Fixes "status there" hallucination)
+        immediate_context = ""
+        if chat_history:
+            # Get the last assistant response (before the current user query)
+            last_assistant_msg = next((m for m in reversed(chat_history) if m["role"] == "assistant"), None)
+            if last_assistant_msg:
+                immediate_context = f"IMMEDIATE PRIOR CONTEXT (Highest Priority): {last_assistant_msg['content'][:500]}"
+                context_str = f"{immediate_context}\n\nPAST EPISODES:\n{context_str}"
+        
+        # LOG: Context
+        if immediate_context:
+            agent_logs.append(f"🧠 **Active Context**: Used immediate history for fallback")
+        
         if past_context:
             agent_logs.append(f"🧠 **Episodic Memory**: Retrieved {len(past_context)} past context(s)")
             for i, ctx in enumerate(past_context[:2], 1):
                 agent_logs.append(f"   └─ Context {i}: \"{ctx[:60]}...\"")
         else:
-            agent_logs.append("🧠 **Episodic Memory**: No prior context found")
+            agent_logs.append("🧠 **Episodic Memory**: No relevant past episodes found")
+
         
         # 2. CREATE AND EXECUTE PLAN
         collected_evidence = []
@@ -454,9 +468,12 @@ with tab1:
                 location_name = loc.get("name", "") if isinstance(loc, dict) else ""
                 label = f"{disaster_name} @ {location_name[:30]}" if location_name else disaster_name
                 
+                if not (isinstance(loc, dict) and loc.get("lat") and loc.get("lon")):
+                    continue
+                    
                 map_data.append({
-                    "lat": loc["lat"], 
-                    "lon": loc["lon"], 
+                    "lat": float(loc.get("lat", 0)), 
+                    "lon": float(loc.get("lon", 0)), 
                     "type": "hazard", 
                     "disaster": label
                 })
@@ -798,7 +815,11 @@ with tab5:
         with st.chat_message("assistant"):
             with st.spinner("Analyst is correlating data... 🔍 Critic is reviewing..."):
                 # Get response with Critic evaluation
-                response_text, media_items, evaluation, agent_logs = get_rag_response(prompt)
+                # Pass chat history excluding the current prompt for context
+                response_text, media_items, evaluation, agent_logs = get_rag_response(
+                    prompt, 
+                    chat_history=st.session_state.messages[:-1]
+                )
                 
                 # --- AGENT BRAIN LOGS (Hackathon Feature) ---
                 if agent_logs:
@@ -830,8 +851,18 @@ with tab5:
                     p = item['payload']
                     m_type = item['type']
                     src = p.get('source', 'Unknown')
+                    score = item.get('score', 0)
+                    
+                    # UI FILTER: Hide irrelevant items
+                    # Show only if explicitly cited OR has high relevance score
+                    is_cited = src in response_text
+                    is_relevant = score > 0.60
+                    
+                    if not (is_cited or is_relevant):
+                        continue
+
                     st.markdown("---")
-                    st.caption(f"EVIDENCE: {src}")
+                    st.caption(f"EVIDENCE: {src} (Score: {score:.2f})")
                     if m_type == "visual":
                         if p.get("type") == "image":
                             img_path = os.path.join("image_inbox", src)

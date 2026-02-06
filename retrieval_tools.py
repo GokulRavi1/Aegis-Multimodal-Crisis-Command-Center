@@ -64,42 +64,66 @@ class RetrievalToolkit:
 
     def search_tactical_memory(self, query: str):
         """
-        Search for text reports, sensor data, and tactical updates.
-        Use this for specific details, locations, or reported incidents.
+        Search ALL memory banks (Text, Visual, Audio) for comprehensive situational awareness.
+        This handles cases where the Planner asks for 'tactical info' but the evidence is in a video.
         """
-        print(f"   🔎 Tool Call: search_tactical_memory('{query}')")
-        if not self.client.collection_exists(self.TACTICAL_COLLECTION):
-            return {"error": "Tactical memory collection does not exist."}
+        print(f"   🔎 Tool Call: search_tactical_memory('{query}') (Multi-Collection)")
+        
+        all_hits = []
+        
+        # 1. Search Text/Tactical
+        if self.client.collection_exists(self.TACTICAL_COLLECTION):
+            try:
+                vec = list(self.text_model.embed([query]))[0].tolist()
+                res = self.client.query_points(self.TACTICAL_COLLECTION, query=vec, limit=5, with_payload=True)
+                for hit in res.points:
+                    if hit.score > self.score_threshold:
+                        all_hits.append({
+                            "type": "text", "source": hit.payload.get("source"),
+                            "content": hit.payload.get("content", "")[:200],
+                            "location": hit.payload.get("location", {}).get("name", "Unknown"),
+                            "score": hit.score, "raw_payload": hit.payload
+                        })
+            except Exception as e: print(f"   ⚠️ Text search error: {e}")
+
+        # 2. Search Visual (Cross-Modal) - Critical for Video/Image evidence
+        if self.client.collection_exists(self.VISUAL_COLLECTION):
+            try:
+                # Use CLIP Text model for visual search
+                vec = list(self.clip_text_model.embed([query]))[0].tolist()
+                res = self.client.query_points(self.VISUAL_COLLECTION, query=vec, limit=5, with_payload=True)
+                for hit in res.points:
+                    if hit.score > self.score_threshold:
+                        all_hits.append({
+                            "type": "visual", "source": hit.payload.get("source"),
+                            "content": f"Visual Detection: {hit.payload.get('detected_disaster')} | OCR: {hit.payload.get('ocr_text', '')[:100]}",
+                            "location": hit.payload.get("location", {}).get("name", "Unknown"),
+                            "score": hit.score, "raw_payload": hit.payload
+                        })
+            except Exception as e: print(f"   ⚠️ Visual search error: {e}")
+
+        # 3. Search Audio
+        if self.client.collection_exists(self.AUDIO_COLLECTION):
+            try:
+                vec = list(self.text_model.embed([query]))[0].tolist()
+                res = self.client.query_points(self.AUDIO_COLLECTION, query=vec, limit=3, with_payload=True)
+                for hit in res.points:
+                    if hit.score > self.score_threshold:
+                        all_hits.append({
+                            "type": "audio", "source": hit.payload.get("source"),
+                            "content": f"Audio: {hit.payload.get('transcript', '')[:150]}",
+                            "location": hit.payload.get("location", {}).get("name", "Unknown"),
+                            "score": hit.score, "raw_payload": hit.payload
+                        })
+            except Exception as e: print(f"   ⚠️ Audio search error: {e}")
+
+        # Sort combined results by score
+        all_hits.sort(key=lambda x: x["score"], reverse=True)
+        
+        if not all_hits:
+            return {"result": []}
             
-        try:
-            # Embed using BGE text model
-            vector = list(self.text_model.embed([query]))[0].tolist()
-            
-            results = self.client.query_points(
-                collection_name=self.TACTICAL_COLLECTION, 
-                query=vector, 
-                limit=5, 
-                with_payload=True
-            )
-            
-            hits = []
-            for hit in results.points:
-                if hit.score > self.score_threshold:
-                    hits.append({
-                        "type": "text",
-                        "source": hit.payload.get("source"),
-                        "content": hit.payload.get("content", "")[:200],
-                        "location": hit.payload.get("location", {}).get("name", "Unknown"),
-                        "score": hit.score,
-                        "raw_payload": hit.payload
-                    })
-            
-            if not hits:
-                return {"result": []}  # Return empty list for consistent parsing
-                
-            return {"result": hits}
-        except Exception as e:
-            return {"error": str(e)}
+        return {"result": all_hits[:10]} # Return top 10 combined
             
     def search_audio_memory(self, query: str):
         """
